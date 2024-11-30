@@ -1,0 +1,6 @@
+;; -*- mode:lisp -*-
+
+(in-package :lem-user)
+
+(asdf:load-asd (probe-file "lem-rooms-client.asd"))
+(ql:quickload :lem-rooms-client)

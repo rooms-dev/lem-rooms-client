@@ -1,0 +1,28 @@
+("quicklisp" .
+ (:class qlot/source/dist:source-dist
+  :initargs (:distribution "https://beta.quicklisp.org/dist/quicklisp.txt" :%version :latest)
+  :version "2024-10-12"))
+("uiop" .
+ (:class qlot/source/ql:source-ql
+  :initargs (:%version :latest)
+  :version "ql-2024-10-12"))
+("micros" .
+ (:class qlot/source/git:source-git
+  :initargs (:remote-url "https://github.com/lem-project/micros.git")
+  :version "git-af94fe5d6688f67a092f604765fb706ebae44e99"))
+("lem-mailbox" .
+ (:class qlot/source/git:source-git
+  :initargs (:remote-url "https://github.com/lem-project/lem-mailbox.git")
+  :version "git-12d629541da440fadf771b0225a051ae65fa342a"))
+("async-process" .
+ (:class qlot/source/git:source-git
+  :initargs (:remote-url "https://github.com/lem-project/async-process.git")
+  :version "git-3b16b91d417530dac03559980fb5703206e20c55"))
+("jsonrpc" .
+ (:class qlot/source/git:source-git
+  :initargs (:remote-url "https://github.com/cxxxr/jsonrpc.git")
+  :version "git-2af1e0fad429ee8c706b86c4a853248cdd1be933"))
+("lem" .
+ (:class qlot/source/git:source-git
+  :initargs (:remote-url "https://github.com/lem-project/lem.git")
+  :version "git-ff01feceae82a75bec7867a4cbd4e427852ec1bf"))
