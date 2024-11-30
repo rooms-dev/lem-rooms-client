@@ -10,7 +10,6 @@ RUN set -x; \
 	nodejs \
 	npm
 
-WORKDIR lem-rooms-client
 RUN qlot install
 RUN qlot exec sbcl --noinform --eval "(ql:quickload :lem-server)"
 ENTRYPOINT qlot exec sbcl --noinform --eval "(ql:quickload :lem-server)" --eval "(ql:quickload :lem-rooms-client)" --eval "(lem-server:run-websocket-server :hostname \"0.0.0.0\")" --quit
