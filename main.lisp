@@ -225,6 +225,7 @@
 
 (defun create-rooms-pane ()
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
+    (setf (not-switchable-buffer-p buffer) t)
     (update-rooms-buffer buffer :status :connecting)
     (make-rightside-window buffer :width 30)
     buffer))
