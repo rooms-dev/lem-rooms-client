@@ -18,7 +18,8 @@
            #:post
            #:get-user
            #:get-rooms
-           #:create-room))
+           #:create-room
+           #:backdoor))
 (in-package #:lem-rooms-client/rooms-api)
 
 (defstruct user
@@ -56,6 +57,10 @@
     ,@(when authorization
         `(("Authorization" . ,(format nil "Bearer ~A" (access-token)))))))
 
+(defun content (&rest args)
+  (with-output-to-string (out)
+    (yason:encode (apply #'hash args) out)))
+
 (defun get (path &key authorization)
   (yason:parse (dex:get (url path)
                         :headers (headers authorization))))
@@ -74,6 +79,8 @@
 (defun create-room (&key name scope)
   (convert-to-room
    (post "/rooms"
-         (with-output-to-string (out)
-           (yason:encode (hash :name name :scope scope)
-                         out)))))
+         (content :name name :scope scope))))
+
+(defun backdoor (name)
+  (post "/backdoor"
+        (content :name name)))

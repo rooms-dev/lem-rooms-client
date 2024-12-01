@@ -48,3 +48,9 @@
   (if (browser-frontend-p)
       (sign-in-with-browser-frontend)
       (sign-in)))
+
+(define-command rooms-backdoor (name) ((:string "Name: "))
+  (let ((response (rooms-api:backdoor name)))
+    (setf (access-token)
+          (gethash "access_token" response))
+    (message "Sign-in Successful")))
