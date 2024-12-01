@@ -1,14 +1,14 @@
 (uiop:define-package #:lem-rooms-client/config
   (:use #:cl
         #:lem)
-  (:export #:*rooms-url*
-           #:*editor-server-url*
+  (:export #:rooms-url
            #:access-token
            #:user
            #:user-name))
 (in-package #:lem-rooms-client/config)
 
-(defparameter *rooms-url* "http://163.44.114.56:8080")
+(defun rooms-url ()
+  (uiop:getenv "ROOMS_URL"))
 
 (defun access-token ()
   (config :rooms.access-token))

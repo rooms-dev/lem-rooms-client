@@ -49,7 +49,7 @@
                 :websocket-url (gethash "websocket_url" value)))
 
 (defun url (path)
-  (quri:make-uri :defaults *rooms-url*
+  (quri:make-uri :defaults (rooms-url)
                  :path path))
 
 (defun headers (authorization)

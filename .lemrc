@@ -4,5 +4,3 @@
 
 (asdf:load-asd (probe-file "lem-rooms-client.asd"))
 (ql:quickload :lem-rooms-client)
-
-(setf lem-rooms-client/config:*rooms-url* "http://localhost:8080")
