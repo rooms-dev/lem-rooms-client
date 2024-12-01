@@ -25,4 +25,4 @@
 ("lem" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/lem.git")
-  :version "git-136788adedfeb84e7f88de4bcd09ae3b0384f3fe"))
+  :version "git-64f3699892ea2158885f99eeb74c94cfbd329f64"))
