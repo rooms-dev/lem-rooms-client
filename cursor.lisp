@@ -1,5 +1,6 @@
 (uiop:define-package #:lem-rooms-client/cursor
-  (:use #:cl)
+  (:use #:cl
+        #:lem-rooms-client/utils)
   (:export #:set-cursor))
 (in-package #:lem-rooms-client/cursor)
 
@@ -41,7 +42,9 @@
   (let ((cursor (get-cursor buffer id)))
     (cond ((null cursor)
            (assert color)
-           (let ((attribute (lem:make-attribute :foreground "white" :background color)))
+           (let ((attribute (lem:make-attribute
+                             :foreground (best-foreground-color color)
+                             :background color)))
              (lem:with-point ((point (lem:buffer-point buffer)))
                (lem:move-to-position point position)
                (setf (get-cursor buffer id)
