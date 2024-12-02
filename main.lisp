@@ -260,18 +260,22 @@
                           (agent-api:share-directory :room-id room-id :path directory)
                           (start-room client-id room-id directory management-buffer))))))
 
-(defun join-room (room)
-  (let ((room-id (rooms-api:room-id room))
-        (management-buffer (create-rooms-pane)))
-    (setup-agent (rooms-api:room-websocket-url room))
-    (enter-room room-id
-                :then (lambda (client-id)
-                        (let ((directory (agent-api:sync-directory :room-id room-id)))
-                          (start-room client-id
-                                      room-id
-                                      (namestring
-                                       (uiop:ensure-directory-pathname directory))
-                                      management-buffer))))))
+(defun join-room (room-json)
+  (let ((room-id (rooms-api:room-id room-json)))
+    (let ((room (find-room-by-id room-id)))
+      (cond (room
+             (find-file (room-directory room)))
+            (t
+             (let ((management-buffer (create-rooms-pane)))
+               (setup-agent (rooms-api:room-websocket-url room-json))
+               (enter-room room-id
+                           :then (lambda (client-id)
+                                   (let ((directory (agent-api:sync-directory :room-id room-id)))
+                                     (start-room client-id
+                                                 room-id
+                                                 (namestring
+                                                  (uiop:ensure-directory-pathname directory))
+                                                 management-buffer))))))))))
 
 (define-command rooms-list () ()
   (init)
