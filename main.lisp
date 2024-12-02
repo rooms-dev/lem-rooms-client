@@ -62,14 +62,16 @@
                   (setf *connected-hooks* '())
                   (setf *connected* t)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
-                    (update-rooms-buffer buffer :status :connected))))))
+                    (update-rooms-buffer buffer :status :connected))
+                  (redraw-display)))))
 
 (defun on-disconnected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
                   (setf *connected* nil)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
-                    (update-rooms-buffer buffer :status :disconnected))))))
+                    (update-rooms-buffer buffer :status :disconnected))
+                  (redraw-display)))))
 
 (defun add-connected-hook (hook)
   (if *connected*
