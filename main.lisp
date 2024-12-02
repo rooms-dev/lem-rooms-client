@@ -230,13 +230,16 @@
     (make-rightside-window buffer :width 30)
     buffer))
 
+(defun open-room-directory (directory)
+  (find-file directory))
+
 (defun start-room (client-id room-id directory management-buffer)
   (update-rooms-buffer management-buffer :status :connected)
   (register-directory :room-id room-id
                       :client-id client-id
                       :directory directory
                       :management-buffer management-buffer)
-  (find-file directory))
+  (open-room-directory directory))
 
 (defun enter-room (room-id &key then)
   (let* ((enter-room-result (agent-api:enter-room :room-id room-id :user-name (config:user-name)))
@@ -264,7 +267,7 @@
   (let ((room-id (rooms-api:room-id room-json)))
     (let ((room (find-room-by-id room-id)))
       (cond (room
-             (find-file (room-directory room)))
+             (open-room-directory (room-directory room)))
             (t
              (let ((management-buffer (create-rooms-pane)))
                (setup-agent (rooms-api:room-websocket-url room-json))
