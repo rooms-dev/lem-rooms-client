@@ -54,7 +54,7 @@
 
 (defun headers (authorization)
   `(("content-type" . "application/json")
-    ,@(when authorization
+    ,@(when (and authorization (access-token))
         `(("Authorization" . ,(format nil "Bearer ~A" (access-token)))))))
 
 (defun content (&rest args)
@@ -74,7 +74,7 @@
   (convert-to-user (get "/user" :authorization t)))
 
 (defun get-rooms ()
-  (mapcar #'convert-to-room (get "/rooms")))
+  (mapcar #'convert-to-room (get "/rooms" :authorization t)))
 
 (defun create-room (&key name scope)
   (convert-to-room
