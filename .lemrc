@@ -4,3 +4,8 @@
 
 (asdf:load-asd (probe-file "lem-rooms-client.asd"))
 (ql:quickload :lem-rooms-client)
+
+(loop :for line :in (uiop:read-file-lines ".env")
+      :do (destructuring-bind (key value)
+              (uiop:split-string line :separator '(#\=))
+            (setf (uiop:getenv key) value)))
