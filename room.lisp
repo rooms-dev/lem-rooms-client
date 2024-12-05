@@ -30,8 +30,8 @@
   (find room-id *rooms* :key #'room-id :test #'equal))
 
 (defun find-room-by-file (file)
-  (dolist (room-root *rooms*)
-    (let ((root-path (namestring (room-directory room-root)))
+  (dolist (room *rooms*)
+    (let ((root-path (namestring (room-directory room)))
           (sub-path (namestring file)))
       (when (starts-with-subseq root-path sub-path)
-        (return room-root)))))
+        (return room)))))
