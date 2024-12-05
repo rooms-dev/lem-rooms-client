@@ -31,9 +31,9 @@
 
 (defun on-before-change (point arg)
   (unless *inhibit-change-notification*
-    (let* ((buffer (point-buffer point))
-           (position (position-of point))
-           (room-id (buffer:room-id buffer)))
+    (when-let* ((buffer (point-buffer point))
+                (room-id (buffer:room-id buffer))
+                (position (position-of point)))
       (etypecase arg
         (string
          (agent-api:edit :room-id room-id
@@ -186,7 +186,7 @@
             (buffer-disable-undo buffer)
             (buffer-enable-undo buffer))))
       (buffer:register-room-id-and-path buffer room-id path)
-      (add-hook (variable-value 'before-change-functions :buffer buffer) 'on-before-change))))
+      (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))))
 
 (defun prompt-for-scope (prompt)
   (prompt-for-string prompt
