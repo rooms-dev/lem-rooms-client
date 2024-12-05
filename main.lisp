@@ -237,10 +237,10 @@
 
 (defun start-room (client-id room-id directory management-buffer)
   (update-rooms-buffer management-buffer :status :connected)
-  (register-directory :room-id room-id
-                      :client-id client-id
-                      :directory directory
-                      :management-buffer management-buffer)
+  (register-room :room-id room-id
+                 :client-id client-id
+                 :directory directory
+                 :management-buffer management-buffer)
   (open-room-directory directory))
 
 (defun enter-room (room-id &key then)

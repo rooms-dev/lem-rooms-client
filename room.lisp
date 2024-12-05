@@ -6,7 +6,7 @@
            #:room-client-id
            #:room-id
            #:room-directory
-           #:register-directory
+           #:register-room
            #:find-room-by-id
            #:find-room-by-file))
 (in-package #:lem-rooms-client/room)
@@ -19,12 +19,13 @@
   directory
   management-buffer)
 
-(defun register-directory (&key room-id client-id directory management-buffer)
-  (push (make-room :id room-id
-                   :client-id client-id
-                   :directory directory
-                   :management-buffer management-buffer)
-        *rooms*))
+(defun register-room (&key room-id client-id directory management-buffer)
+  (let ((room (make-room :id room-id
+                         :client-id client-id
+                         :directory directory
+                         :management-buffer management-buffer)))
+    (push room *rooms*)
+    room))
 
 (defun find-room-by-id (room-id)
   (find room-id *rooms* :key #'room-id :test #'equal))
