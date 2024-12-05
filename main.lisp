@@ -264,7 +264,8 @@
                             :room-id room-id
                             :client-id client-id
                             :directory directory
-                            :management-buffer management-buffer)))))))
+                            :management-buffer management-buffer
+                            :owner-p t)))))))
 
 (defun join-room (room-json)
   (let ((room-id (rooms-api:room-id room-json)))
@@ -282,7 +283,8 @@
                                     :room-id room-id
                                     :directory (namestring
                                                 (uiop:ensure-directory-pathname directory))
-                                    :management-buffer management-buffer))))))))))
+                                    :management-buffer management-buffer
+                                    :owner-p nil))))))))))
 
 (define-command rooms-list () ()
   (init)

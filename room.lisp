@@ -6,6 +6,7 @@
            #:room-client-id
            #:room-id
            #:room-directory
+           #:room-owner-p
            #:register-room
            #:find-room-by-id
            #:find-room-by-file))
@@ -17,13 +18,15 @@
   id
   client-id
   directory
-  management-buffer)
+  management-buffer
+  owner-p)
 
-(defun register-room (&key room-id client-id directory management-buffer)
+(defun register-room (&key room-id client-id directory management-buffer owner-p)
   (let ((room (make-room :id room-id
                          :client-id client-id
                          :directory directory
-                         :management-buffer management-buffer)))
+                         :management-buffer management-buffer
+                         :owner-p owner-p)))
     (push room *rooms*)
     room))
 
