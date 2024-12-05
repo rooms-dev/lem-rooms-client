@@ -309,3 +309,9 @@
                                                                      (join-room room)))
                                                   0)
                                      (lem/multi-column-list:quit component)))))
+
+(define-command room-publish-invitation () ()
+  (let ((room (find-room-by-file (buffer-directory (current-buffer)))))
+    (unless (room-owner-p room)
+      (editor-error "Only the room owner can issue invitations"))
+    ))
