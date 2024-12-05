@@ -235,13 +235,9 @@
 (defun open-room-directory (directory)
   (find-file directory))
 
-(defun start-room (client-id room-id directory management-buffer)
-  (update-rooms-buffer management-buffer :status :connected)
-  (register-room :room-id room-id
-                 :client-id client-id
-                 :directory directory
-                 :management-buffer management-buffer)
-  (open-room-directory directory))
+(defun start-room (room)
+  (update-rooms-buffer (room-management-buffer room) :status :connected)
+  (open-room-directory (room-directory room)))
 
 (defun enter-room (room-id &key then)
   (let* ((enter-room-result (agent-api:enter-room :room-id room-id :user-name (config:user-name)))
@@ -263,7 +259,12 @@
       (enter-room room-id
                   :then (lambda (client-id)
                           (agent-api:share-directory :room-id room-id :path directory)
-                          (start-room client-id room-id directory management-buffer))))))
+                          (start-room
+                           (register-room
+                            :room-id room-id
+                            :client-id client-id
+                            :directory directory
+                            :management-buffer management-buffer)))))))
 
 (defun join-room (room-json)
   (let ((room-id (rooms-api:room-id room-json)))
@@ -275,11 +276,13 @@
             (enter-room room-id
                         :then (lambda (client-id)
                                 (let ((directory (agent-api:sync-directory :room-id room-id)))
-                                  (start-room client-id
-                                              room-id
-                                              (namestring
-                                               (uiop:ensure-directory-pathname directory))
-                                              management-buffer)))))))))
+                                  (start-room
+                                   (register-room
+                                    :client-id client-id
+                                    :room-id room-id
+                                    :directory (namestring
+                                                (uiop:ensure-directory-pathname directory))
+                                    :management-buffer management-buffer))))))))))
 
 (define-command rooms-list () ()
   (init)
