@@ -150,14 +150,9 @@
 (defun on-comments (params)
   (message "~A" (pretty-json params)))
 
-(defun ensure-sign-in ()
-  (unless (config:access-token)
-    (sign-in:rooms-sign-in)))
-
-(defun setup-agent (websocket-url)
+(defun setup-agent ()
   (destroy-agent-if-alive)
-  (run-agent :websocket-url websocket-url
-             :access-token (config:access-token)
+  (run-agent :access-token (config:access-token)
              :on-message 'on-message
              :on-connected 'on-connected
              :on-disconnected 'on-disconnected
@@ -172,6 +167,10 @@
             (list :id (rooms-api:user-id user)
                   :github-login (rooms-api:user-github-login user)
                   :avatar-url (rooms-api:user-avatar-url user))))))
+
+(defun ensure-sign-in ()
+  (unless (config:access-token)
+    (sign-in:rooms-sign-in)))
 
 (defun init ()
   (ensure-sign-in)
@@ -214,8 +213,10 @@
   (management-buffer:update (room-management-buffer room) :status :connected)
   (open-room-directory (room-directory room)))
 
-(defun enter-room (room-id &key then)
-  (let* ((enter-room-result (agent-api:enter-room :room-id room-id :user-name (config:user-name)))
+(defun enter-room (room-id websocket-url &key then)
+  (let* ((enter-room-result (agent-api:enter-room :room-id room-id
+                                                  :user-name (config:user-name)
+                                                  :websocket-url websocket-url))
          (client-id (gethash "clientID" enter-room-result)))
     (add-connected-hook (lambda ()
                           (funcall then client-id)))))
@@ -238,10 +239,11 @@
                                           :existing t
                                           :directory (buffer-directory)))
          (room (rooms-api:create-room :name room-name :scope scope)))
-    (setup-agent (rooms-api:room-websocket-url room))
+    (setup-agent)
     (let ((room-id (rooms-api:room-id room))
           (management-buffer (create-rooms-pane)))
       (enter-room room-id
+                  (rooms-api:room-websocket-url room)
                   :then (lambda (client-id)
                           (agent-api:share-directory :room-id room-id :path directory)
                           (start-room
@@ -258,8 +260,9 @@
     (if room
         (open-room-directory (room-directory room))
         (let ((management-buffer (create-rooms-pane)))
-          (setup-agent (rooms-api:room-websocket-url room-json))
+          (setup-agent)
           (enter-room room-id
+                      (rooms-api:room-websocket-url room-json)
                       :then (lambda (client-id)
                               (let ((directory (agent-api:sync-directory :room-id room-id)))
                                 (start-room

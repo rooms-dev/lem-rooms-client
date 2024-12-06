@@ -16,8 +16,7 @@
 (defun to-simple-character-array (string)
   (make-array (length string) :initial-contents string :element-type 'character))
 
-(defun run-process (websocket-url access-token)
-  (setf (uiop:getenv "ROOMS_WEBSOCKET_URL") (to-simple-character-array websocket-url))
+(defun run-process (access-token)
   (setf (uiop:getenv "ROOMS_ACCESS_TOKEN") access-token)
   (async-process:create-process
    (list "node"
@@ -32,10 +31,9 @@
                        on-edit
                        on-users
                        on-comments
-                       websocket-url
                        access-token)
   (assert (not (agent-alive-p *agent*)))
-  (let* ((process (run-process websocket-url access-token))
+  (let* ((process (run-process access-token))
          (jsonrpc (jsonrpc:make-client))
          (stream (lem-lsp-mode/async-process-stream:make-input-stream
                   process
