@@ -7,7 +7,8 @@
         #:lem-rooms-client/agent
         #:lem-rooms-client/room
         #:lem-rooms-client/user)
-  (:local-nicknames (#:agent #:lem-rooms-client/agent)
+  (:local-nicknames (#:api-client #:lem-rooms-client/api-client)
+                    (#:agent #:lem-rooms-client/agent)
                     (#:cursor #:lem-rooms-client/cursor)
                     (#:config #:lem-rooms-client/config)
                     (#:rooms-api #:lem-rooms-client/rooms-api)
@@ -17,22 +18,16 @@
                     (#:management-buffer #:lem-rooms-client/management-buffer)
                     (#:connected-hook #:lem-rooms-client/connected-hook))
   (:export #:init
+           #:client
            #:notify-focus))
 (in-package #:lem-rooms-client/client)
 
 (defvar *inhibit-change-notification* nil)
 
 (defun init ()
-  (let ((access-token (sign-in:sign-in-if-not-set-access-token)))
-    (set-user-if-not-set access-token)
-    (run-agent-if-not-alive access-token))
+  (api-client:init (api-client:client))
+  (run-agent-if-not-alive (api-client:client-access-token (api-client:client)))
   (init-editor-hooks))
-
-(defun init-editor-hooks ()
-  (add-hook *post-command-hook* 'on-post-command)
-  (add-hook *find-file-hook* 'on-find-file)
-  (add-hook *exit-editor-hook* (lambda () (agent:destroy-agent-if-alive)))
-  (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))
 
 (defun run-agent-if-not-alive (access-token)
   (unless (agent:agent-alive-p)
@@ -44,13 +39,11 @@
                      :on-users 'on-users
                      :on-comments 'on-comments)))
 
-(defun set-user-if-not-set (access-token)
-  (unless (config:user)
-    (let ((user (rooms-api:get-user access-token)))
-      (setf (config:user)
-            (list :id (rooms-api:user-id user)
-                  :github-login (rooms-api:user-github-login user)
-                  :avatar-url (rooms-api:user-avatar-url user))))))
+(defun init-editor-hooks ()
+  (add-hook *post-command-hook* 'on-post-command)
+  (add-hook *find-file-hook* 'on-find-file)
+  (add-hook *exit-editor-hook* (lambda () (agent:destroy-agent-if-alive)))
+  (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))
 
 (defun notify-focus (point)
   (let ((buffer (point-buffer point)))

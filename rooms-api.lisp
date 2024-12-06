@@ -1,6 +1,5 @@
 (uiop:define-package #:lem-rooms-client/rooms-api
-  (:use #:cl
-        #:lem-rooms-client/config)
+  (:use #:cl)
   (:import-from #:lem-rooms-client/utils
                 #:hash)
   (:shadow #:get
@@ -14,6 +13,7 @@
            #:room-users
            #:room-scope
            #:room-websocket-url
+           #:authenticated-access-token
            #:get
            #:post
            #:get-authorize-url
@@ -59,7 +59,7 @@
   (make-authenticated :access-token (gethash "access_token" value)))
 
 (defun url (path)
-  (quri:make-uri :defaults (rooms-url)
+  (quri:make-uri :defaults (lem-rooms-client/config:rooms-url)
                  :path path))
 
 (defun headers (access-token)
@@ -75,9 +75,9 @@
   (yason:parse (dex:get (url path)
                         :headers (headers access-token))))
 
-(defun post (path content)
+(defun post (path content &key access-token)
   (yason:parse (dex:post (url path)
-                         :headers (headers (access-token))
+                         :headers (headers access-token)
                          :content content)))
 
 (defun get-authorize-url ()
@@ -91,23 +91,25 @@
 (defun get-user (access-token)
   (convert-to-user (get "/user" :access-token access-token)))
 
-(defun get-rooms ()
-  (mapcar #'convert-to-room (get "/rooms" :access-token (access-token))))
+(defun get-rooms (&key access-token)
+  (mapcar #'convert-to-room (get "/rooms" :access-token access-token)))
 
-(defun create-room (&key name scope)
+(defun create-room (&key access-token name scope)
   (convert-to-room
    (post "/rooms"
-         (content :name name :scope scope))))
+         (content :name name :scope scope)
+         :access-token access-token)))
 
 (defun backdoor (name)
   (post "/backdoor"
         (content :name name)))
 
-(defun create-invitation (room-id)
+(defun create-invitation (room-id &key access-token)
   (post (format nil "/rooms/~A/invitations" room-id)
-        (content)))
+        (content)
+        :access-token access-token))
 
-(defun get-room-by-invitation (invitation-code)
+(defun get-room-by-invitation (invitation-code &key access-token)
   (convert-to-room
    (get (format nil "/invitations/~A/room" invitation-code)
-        :access-token (access-token))))
+        :access-token access-token)))

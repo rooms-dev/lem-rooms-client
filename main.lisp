@@ -56,7 +56,7 @@
          (directory (prompt-for-directory "Share directory: "
                                           :existing t
                                           :directory (buffer-directory)))
-         (room (rooms-api:create-room :name room-name :scope scope)))
+         (room (rooms-api:create-room :name room-name :scope scope :access-token (config:access-token))))
     (let ((room-id (rooms-api:room-id room))
           (management-buffer (create-rooms-pane)))
       (enter-room room-id
@@ -107,7 +107,7 @@
                                                    "~{~A ~}"
                                                    (mapcar #'rooms-api:user-github-login
                                                            (rooms-api:room-users room)))))
-                  :items (rooms-api:get-rooms)
+                  :items (rooms-api:get-rooms :access-token (config:access-token))
                   :select-callback (lambda (component room)
                                      (start-timer (make-idle-timer (lambda ()
                                                                      (join-room room)))
@@ -124,7 +124,7 @@
       (editor-error "Only the room owner can issue invitations"))
     (let* ((invitation (if (or (null (room-invitation room))
                                (prompt-for-y-or-n-p *recreation-invitation-code-message*))
-                           (rooms-api:create-invitation (room-id room))
+                           (rooms-api:create-invitation (room-id room) :access-token (config:access-token))
                            (room-invitation room)))
            (code (gethash "code" invitation)))
       (show-message (format nil " Invitation code: ~A ~2% copied to clipboard" code)
@@ -135,5 +135,5 @@
 
 (define-command rooms-join-by-invitation-code (invitation-code) ((:string "Invitation code: "))
   (client:init)
-  (let ((room-json (rooms-api:get-room-by-invitation invitation-code)))
+  (let ((room-json (rooms-api:get-room-by-invitation invitation-code :access-token (config:access-token))))
     (join-room room-json)))

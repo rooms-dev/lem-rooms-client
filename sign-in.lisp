@@ -26,7 +26,7 @@
     (open-authorize-url-with-browser-frontend authorize-url)
     (when-let ((code (prompt-for-string "code: ")))
       (setf (access-token)
-            (gethash "access_token" (rooms-api:authenticate code)))
+            (rooms-api:authenticated-access-token (rooms-api:authenticate code)))
       (message "Sign-in Successful"))))
 
 (defun sign-in ()
@@ -34,7 +34,7 @@
     (open-external-file authorize-url)
     (when-let ((code (prompt-for-string (format nil "~% ~A ~%~%code: " authorize-url))))
       (setf (access-token)
-            (gethash "access_token" (rooms-api:authenticate code)))
+            (rooms-api:authenticated-access-token (rooms-api:authenticate code)))
       (message "Sign-in Successful"))))
 
 (define-command rooms-sign-in () ()
