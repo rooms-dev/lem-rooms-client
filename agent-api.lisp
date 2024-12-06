@@ -7,7 +7,9 @@
            #:enter-room
            #:share-directory
            #:open-file
-           #:sync-directory))
+           #:sync-directory
+           #:comment
+           #:get-comments))
 (in-package #:lem-rooms-client/agent-api)
 
 (defun focus (&key name room-id path position)
@@ -41,4 +43,13 @@
 
 (defun sync-directory (&key room-id)
   (agent:call "sync-directory"
+              (hash :room-id room-id)))
+
+(defun comment (&key room-id text)
+  (agent:notify "comment"
+                (hash :room-id room-id
+                      :text text)))
+
+(defun get-comments (&key room-id)
+  (agent:call "get-comments"
               (hash :room-id room-id)))

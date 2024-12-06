@@ -26,7 +26,14 @@
 (defun agent-alive-p (agent)
   (and agent (async-process:process-alive-p (agent-process agent))))
 
-(defun run-agent (&key on-message on-connected on-disconnected on-edit on-users websocket-url access-token)
+(defun run-agent (&key on-message
+                       on-connected
+                       on-disconnected
+                       on-edit
+                       on-users
+                       on-comments
+                       websocket-url
+                       access-token)
   (assert (not (agent-alive-p *agent*)))
   (let* ((process (run-process websocket-url access-token))
          (jsonrpc (jsonrpc:make-client))
@@ -39,6 +46,7 @@
     (jsonrpc:expose jsonrpc "disconnected" on-disconnected)
     (jsonrpc:expose jsonrpc "edit" on-edit)
     (jsonrpc:expose jsonrpc "users" on-users)
+    (jsonrpc:expose jsonrpc "comments" on-comments)
     (jsonrpc/client:client-connect-using-class
      jsonrpc
      'lem-lsp-mode/lem-stdio-transport:lem-stdio-transport

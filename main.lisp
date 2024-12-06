@@ -4,7 +4,8 @@
         #:lem
         #:lem-rooms-client/utils
         #:lem-rooms-client/agent
-        #:lem-rooms-client/room)
+        #:lem-rooms-client/room
+        #:lem-rooms-client/user)
   (:local-nicknames (#:cursor #:lem-rooms-client/cursor)
                     (#:config #:lem-rooms-client/config)
                     (#:rooms-api #:lem-rooms-client/rooms-api)
@@ -133,11 +134,20 @@
                                    (return-from found (gethash "roomId" user)))
                                  users)))
                  (room (find-room-by-id room-id)))
+       (update-room-users room
+                          (map 'list
+                               #'convert-user
+                               (remove-if-not (lambda (user)
+                                                (equal room-id (gethash "roomId" user)))
+                                              users)))
        (update-cursors room users)
        (update-rooms-buffer (room-management-buffer room)
                             :users users
                             :status (if *connected* :connected :disconnected))
        (redraw-display)))))
+
+(defun on-comments (params)
+  (message "~A" (pretty-json params)))
 
 (defun ensure-sign-in ()
   (unless (config:access-token)
@@ -151,7 +161,8 @@
              :on-connected 'on-connected
              :on-disconnected 'on-disconnected
              :on-edit 'on-edit
-             :on-users 'on-users))
+             :on-users 'on-users
+             :on-comments 'on-comments))
 
 (defun ensure-user ()
   (unless (config:user)
@@ -196,7 +207,7 @@
                      :test-function (lambda (s)
                                       (member s '("public" "private") :test #'equal))))
 
-(defun update-rooms-buffer (buffer &key users status)
+(defun update-rooms-buffer (buffer &key users status comments)
   (erase-buffer buffer)
   (with-point ((point (buffer-point buffer) :left-inserting))
     (insert-string point
@@ -223,7 +234,11 @@
                        (format nil " ~A " name)
                        :attribute (make-attribute :foreground (best-foreground-color color)
                                                   :background color))
-        (insert-character point #\newline)))))
+        (insert-character point #\newline)))
+    (insert-character point #\newline)
+    (insert-character point #\newline)
+    (do-sequence (comment comments)
+      (comment-user comment))))
 
 (defun create-rooms-pane ()
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
@@ -247,7 +262,9 @@
 
 (define-command rooms-create-room () ()
   (init)
-  (let* ((room-name (prompt-for-string "Room name: " :test-function (lambda (string) (< 0 (length string)))))
+  (let* ((room-name (prompt-for-string "Room name: "
+                                       :test-function (lambda (string)
+                                                        (< 0 (length string)))))
          (scope (prompt-for-scope "Room scope: "))
          (directory (prompt-for-directory "Share directory: "
                                           :existing t

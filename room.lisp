@@ -10,7 +10,8 @@
            #:room-owner-p
            #:register-room
            #:find-room-by-id
-           #:find-room-by-file))
+           #:find-room-by-file
+           #:update-room-users))
 (in-package #:lem-rooms-client/room)
 
 (defvar *rooms* '())
@@ -21,7 +22,8 @@
   directory
   management-buffer
   invitation
-  owner-p)
+  owner-p
+  users)
 
 (defun register-room (&key room-id client-id directory management-buffer owner-p)
   (let ((room (make-room :id room-id
@@ -41,3 +43,6 @@
           (sub-path (namestring file)))
       (when (starts-with-subseq root-path sub-path)
         (return room)))))
+
+(defun update-room-users (room users)
+  (setf (room-users room) users))

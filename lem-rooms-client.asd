@@ -8,6 +8,7 @@
                (:file "agent")
                (:File "agent-api")
                (:file "sign-in")
+               (:file "user")
                (:file "room")
                (:file "buffer")
                (:file "main")))
