@@ -11,4 +11,5 @@
                (:file "user")
                (:file "room")
                (:file "buffer")
+               (:file "management-buffer")
                (:file "main")))

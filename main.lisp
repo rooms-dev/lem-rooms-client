@@ -11,7 +11,8 @@
                     (#:rooms-api #:lem-rooms-client/rooms-api)
                     (#:agent-api #:lem-rooms-client/agent-api)
                     (#:sign-in #:lem-rooms-client/sign-in)
-                    (#:buffer #:lem-rooms-client/buffer)))
+                    (#:buffer #:lem-rooms-client/buffer)
+                    (#:management-buffer #:lem-rooms-client/management-buffer)))
 (in-package #:lem-rooms-client)
 
 (defvar *inhibit-change-notification* nil)
@@ -63,7 +64,7 @@
                   (setf *connected-hooks* '())
                   (setf *connected* t)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
-                    (update-rooms-buffer buffer :status :connected))
+                    (management-buffer:update buffer :status :connected))
                   (redraw-display)))))
 
 (defun on-disconnected (params)
@@ -71,7 +72,7 @@
     (send-event (lambda ()
                   (setf *connected* nil)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
-                    (update-rooms-buffer buffer :status :disconnected))
+                    (management-buffer:update buffer :status :disconnected))
                   (redraw-display)))))
 
 (defun add-connected-hook (hook)
@@ -141,9 +142,9 @@
                                                 (equal room-id (gethash "roomId" user)))
                                               users)))
        (update-cursors room users)
-       (update-rooms-buffer (room-management-buffer room)
-                            :users users
-                            :status (if *connected* :connected :disconnected))
+       (management-buffer:update (room-management-buffer room)
+                                 :users users
+                                 :status (if *connected* :connected :disconnected))
        (redraw-display)))))
 
 (defun on-comments (params)
@@ -199,51 +200,10 @@
       (buffer:register-room-id-and-path buffer room-id path)
       (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))))
 
-(defun prompt-for-scope (prompt)
-  (prompt-for-string prompt
-                     :initial-value "public"
-                     :completion-function (lambda (s)
-                                            (completion s '("public" "private")))
-                     :test-function (lambda (s)
-                                      (member s '("public" "private") :test #'equal))))
-
-(defun update-rooms-buffer (buffer &key users status comments)
-  (erase-buffer buffer)
-  (with-point ((point (buffer-point buffer) :left-inserting))
-    (insert-string point
-                   "Rooms"
-                   :attribute (make-attribute
-                               :bold t
-                               :foreground (best-foreground-color (background-color))))
-    (insert-character point #\newline)
-    (insert-character point #\newline)
-    (insert-string point (format nil "Status:~%"))
-    (ecase status
-      (:connecting
-       (insert-string point "Connecting..." :attribute (make-attribute :foreground "orange")))
-      (:connected
-       (insert-string point "Connected" :attribute (make-attribute :foreground "green")))
-      (:disconnected
-       (insert-string point "Disconnected" :attribute (make-attribute :foreground "red"))))
-    (insert-character point #\newline)
-    (insert-string point (format nil "~%Users:~%"))
-    (do-sequence (user users)
-      (let ((name (gethash "name" user))
-            (color (gethash "color" user)))
-        (insert-string point
-                       (format nil " ~A " name)
-                       :attribute (make-attribute :foreground (best-foreground-color color)
-                                                  :background color))
-        (insert-character point #\newline)))
-    (insert-character point #\newline)
-    (insert-character point #\newline)
-    (do-sequence (comment comments)
-      (comment-user comment))))
-
 (defun create-rooms-pane ()
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
     (setf (not-switchable-buffer-p buffer) t)
-    (update-rooms-buffer buffer :status :connecting)
+    (management-buffer:update buffer :status :connecting)
     (make-rightside-window buffer :width 30)
     buffer))
 
@@ -251,7 +211,7 @@
   (find-file directory))
 
 (defun start-room (room)
-  (update-rooms-buffer (room-management-buffer room) :status :connected)
+  (management-buffer:update (room-management-buffer room) :status :connected)
   (open-room-directory (room-directory room)))
 
 (defun enter-room (room-id &key then)
@@ -259,6 +219,14 @@
          (client-id (gethash "clientID" enter-room-result)))
     (add-connected-hook (lambda ()
                           (funcall then client-id)))))
+
+(defun prompt-for-scope (prompt)
+  (prompt-for-string prompt
+                     :initial-value "public"
+                     :completion-function (lambda (s)
+                                            (completion s '("public" "private")))
+                     :test-function (lambda (s)
+                                      (member s '("public" "private") :test #'equal))))
 
 (define-command rooms-create-room () ()
   (init)
