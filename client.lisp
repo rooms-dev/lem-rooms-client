@@ -30,7 +30,7 @@
   (add-hook *post-command-hook* 'on-post-command)
   (add-hook *find-file-hook* 'on-find-file)
   (add-hook *exit-editor-hook* (lambda () (agent:destroy-agent-if-alive)))
-  (add-hook (variable-value 'before-change-functions :global t) #'on-before-change))
+  (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))
 
 (defun sign-in-if-not-set-access-token ()
   (unless (config:access-token)
@@ -40,12 +40,12 @@
 (defun run-agent-if-not-alive (access-token)
   (unless (agent:agent-alive-p)
     (agent:run-agent :access-token access-token
-                     :on-message #'on-message
-                     :on-connected #'on-connected
-                     :on-disconnected #'on-disconnected
-                     :on-edit #'on-edit
-                     :on-users #'on-users
-                     :on-comments #'on-comments)))
+                     :on-message 'on-message
+                     :on-connected 'on-connected
+                     :on-disconnected 'on-disconnected
+                     :on-edit 'on-edit
+                     :on-users 'on-users
+                     :on-comments 'on-comments)))
 
 (defun set-user-if-not-set (access-token)
   (unless (config:user)
@@ -172,7 +172,9 @@
        (redraw-display)))))
 
 (defun on-comments (params)
-  (message "~A" (pretty-json params)))
+  (send-event
+   (lambda ()
+     (message "~A" (pretty-json params)))))
 
 (defun on-post-command ()
   (notify-focus (current-point)))
