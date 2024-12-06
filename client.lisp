@@ -34,11 +34,6 @@
   (add-hook *exit-editor-hook* (lambda () (agent:destroy-agent-if-alive)))
   (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))
 
-(defun sign-in-if-not-set-access-token ()
-  (unless (config:access-token)
-    (sign-in:rooms-sign-in))
-  (config:access-token))
-
 (defun run-agent-if-not-alive (access-token)
   (unless (agent:agent-alive-p)
     (agent:run-agent :access-token access-token

@@ -2,10 +2,10 @@
   (:use #:cl
         #:lem
         #:alexandria
-        #:lem-rooms-client/utils
         #:lem-rooms-client/config)
   (:local-nicknames (:rooms-api :lem-rooms-client/rooms-api))
-  (:export #:rooms-sign-in))
+  (:export #:rooms-sign-in
+           #:sign-in-if-not-set-access-token))
 (in-package :lem-rooms-client/sign-in)
 
 (defun authorize-url ()
@@ -45,7 +45,7 @@
       (message "Sign-in Successful"))))
 
 (define-command rooms-sign-in () ()
-  (if (browser-frontend-p)
+  (if (lem-rooms-client/editor:browser-frontend-p)
       (sign-in-with-browser-frontend)
       (sign-in)))
 
@@ -54,3 +54,8 @@
     (setf (access-token)
           (gethash "access_token" response))
     (message "Sign-in Successful")))
+
+(defun sign-in-if-not-set-access-token ()
+  (unless (access-token)
+    (rooms-sign-in))
+  (access-token))
