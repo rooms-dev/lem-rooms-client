@@ -2,6 +2,7 @@
   :depends-on ()
   :serial t
   :components ((:file "utils")
+               (:file "editor")
                (:file "config")
                (:file "rooms-api")
                (:file "cursor")
@@ -12,5 +13,6 @@
                (:file "room")
                (:file "buffer")
                (:file "management-buffer")
+               (:file "connected-hook")
                (:file "client")
                (:file "main")))

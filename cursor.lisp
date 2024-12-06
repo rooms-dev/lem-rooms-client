@@ -1,6 +1,7 @@
 (uiop:define-package #:lem-rooms-client/cursor
   (:use #:cl
-        #:lem-rooms-client/utils)
+        #:lem-rooms-client/utils
+        #:lem-rooms-client/editor)
   (:export #:set-cursor))
 (in-package #:lem-rooms-client/cursor)
 

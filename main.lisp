@@ -13,7 +13,8 @@
                     (#:sign-in #:lem-rooms-client/sign-in)
                     (#:buffer #:lem-rooms-client/buffer)
                     (#:management-buffer #:lem-rooms-client/management-buffer)
-                    (#:client #:lem-rooms-client/client)))
+                    (#:client #:lem-rooms-client/client)
+                    (#:connected-hook #:lem-rooms-client/connected-hook)))
 (in-package #:lem-rooms-client)
 
 (defun create-rooms-pane ()
@@ -35,8 +36,8 @@
                                                   :user-name (config:user-name)
                                                   :websocket-url websocket-url))
          (client-id (gethash "clientID" enter-room-result)))
-    (client::add-connected-hook (lambda ()
-                                  (funcall then client-id)))))
+    (connected-hook:add (lambda ()
+                          (funcall then client-id)))))
 
 (defun prompt-for-scope (prompt)
   (prompt-for-string prompt

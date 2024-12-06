@@ -3,6 +3,7 @@
         #:alexandria
         #:lem
         #:lem-rooms-client/utils
+        #:lem-rooms-client/editor
         #:lem-rooms-client/agent
         #:lem-rooms-client/room
         #:lem-rooms-client/user)
@@ -13,15 +14,13 @@
                     (#:agent-api #:lem-rooms-client/agent-api)
                     (#:sign-in #:lem-rooms-client/sign-in)
                     (#:buffer #:lem-rooms-client/buffer)
-                    (#:management-buffer #:lem-rooms-client/management-buffer))
+                    (#:management-buffer #:lem-rooms-client/management-buffer)
+                    (#:connected-hook #:lem-rooms-client/connected-hook))
   (:export #:init
            #:notify-focus))
 (in-package #:lem-rooms-client/client)
 
 (defvar *inhibit-change-notification* nil)
-
-(defvar *connected-hooks* '())
-(defvar *connected* nil)
 
 (defun init ()
   (let ((access-token (sign-in-if-not-set-access-token)))
@@ -123,10 +122,7 @@
 (defun on-connected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
-                  (dolist (hook *connected-hooks*)
-                    (funcall hook))
-                  (setf *connected-hooks* '())
-                  (setf *connected* t)
+                  (connected-hook:on-connect)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
                     (management-buffer:update buffer :status :connected))
                   (redraw-display)))))
@@ -134,15 +130,10 @@
 (defun on-disconnected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
-                  (setf *connected* nil)
+                  (connected-hook:disconnect)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
                     (management-buffer:update buffer :status :disconnected))
                   (redraw-display)))))
-
-(defun add-connected-hook (hook)
-  (if *connected*
-      (funcall hook)
-      (push hook *connected-hooks*)))
 
 (defun update-cursors (room users)
   (let ((client-id (room-client-id room)))
@@ -177,7 +168,7 @@
        (update-cursors room users)
        (management-buffer:update (room-management-buffer room)
                                  :users users
-                                 :status (if *connected* :connected :disconnected))
+                                 :status (if (connected-hook:connected-p) :connected :disconnected))
        (redraw-display)))))
 
 (defun on-comments (params)

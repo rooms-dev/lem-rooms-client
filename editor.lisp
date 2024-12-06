@@ -1,26 +1,13 @@
-(uiop:define-package #:lem-rooms-client/utils
-  (:use #:cl)
-  (:export #:do-sequence
-           #:hash
-           #:pretty-json))
-(in-package #:lem-rooms-client/utils)
-
-(defmacro do-sequence ((var sequence) &body body)
-  `(map ()
-        (lambda (,var) ,@body)
-        ,sequence))
-
-(defun hash (&rest plist)
-  (let ((hash (make-hash-table :test 'equal)))
-    (loop :for (key value) :on plist :by #'cddr
-          :do (setf (gethash (change-case:camel-case (string key))
-                             hash)
-                    value))
-    hash))
-
-(defun pretty-json (object)
-  (yason:with-output-to-string* (:indent t)
-    (yason:encode object)))
+(uiop:define-package #:lem-rooms-client/editor
+  (:use #:cl
+        #:lem)
+  (:export #:lem-to-lsp-position
+           #:lsp-to-lem-position
+           #:position-of
+           #:move-to-position*
+           #:browser-frontend-p
+           #:best-foreground-color))
+(in-package #:lem-rooms-client/editor)
 
 (defun lem-to-lsp-position (position)
   (1- position))
