@@ -19,7 +19,9 @@
            #:get-user
            #:get-rooms
            #:create-room
-           #:backdoor))
+           #:backdoor
+           #:create-invitation
+           #:get-room-by-invitation))
 (in-package #:lem-rooms-client/rooms-api)
 
 (defstruct user
@@ -84,3 +86,12 @@
 (defun backdoor (name)
   (post "/backdoor"
         (content :name name)))
+
+(defun create-invitation (room-id)
+  (post (format nil "/rooms/~A/invitations" room-id)
+        (content)))
+
+(defun get-room-by-invitation (invitation-code)
+  (convert-to-room
+   (get (format nil "/invitations/~A/room" invitation-code)
+        :authorization t)))

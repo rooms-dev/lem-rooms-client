@@ -6,6 +6,7 @@
            #:room-client-id
            #:room-id
            #:room-directory
+           #:room-invitation
            #:room-owner-p
            #:register-room
            #:find-room-by-id
@@ -19,6 +20,7 @@
   client-id
   directory
   management-buffer
+  invitation
   owner-p)
 
 (defun register-room (&key room-id client-id directory management-buffer owner-p)

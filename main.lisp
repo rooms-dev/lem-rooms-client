@@ -268,23 +268,23 @@
                             :owner-p t)))))))
 
 (defun join-room (room-json)
-  (let ((room-id (rooms-api:room-id room-json)))
-    (let ((room (find-room-by-id room-id)))
-      (if room
-          (open-room-directory (room-directory room))
-          (let ((management-buffer (create-rooms-pane)))
-            (setup-agent (rooms-api:room-websocket-url room-json))
-            (enter-room room-id
-                        :then (lambda (client-id)
-                                (let ((directory (agent-api:sync-directory :room-id room-id)))
-                                  (start-room
-                                   (register-room
-                                    :client-id client-id
-                                    :room-id room-id
-                                    :directory (namestring
-                                                (uiop:ensure-directory-pathname directory))
-                                    :management-buffer management-buffer
-                                    :owner-p nil))))))))))
+  (let* ((room-id (rooms-api:room-id room-json))
+         (room (find-room-by-id room-id)))
+    (if room
+        (open-room-directory (room-directory room))
+        (let ((management-buffer (create-rooms-pane)))
+          (setup-agent (rooms-api:room-websocket-url room-json))
+          (enter-room room-id
+                      :then (lambda (client-id)
+                              (let ((directory (agent-api:sync-directory :room-id room-id)))
+                                (start-room
+                                 (register-room
+                                  :client-id client-id
+                                  :room-id room-id
+                                  :directory (namestring
+                                              (uiop:ensure-directory-pathname directory))
+                                  :management-buffer management-buffer
+                                  :owner-p nil)))))))))
 
 (define-command rooms-list () ()
   (init)
@@ -310,8 +310,26 @@
                                                   0)
                                      (lem/multi-column-list:quit component)))))
 
-(define-command room-publish-invitation () ()
+(defparameter *recreation-invitation-code-message*
+  (format nil "An invitation code has already been issued.~@
+               Do you want to invalidate the old invitation code and create a new one?"))
+
+(define-command rooms-publish-invitation () ()
   (let ((room (find-room-by-file (buffer-directory (current-buffer)))))
-    (unless (room-owner-p room)
+    (unless (and room (room-owner-p room))
       (editor-error "Only the room owner can issue invitations"))
-    ))
+    (let* ((invitation (if (or (null (room-invitation room))
+                               (prompt-for-y-or-n-p *recreation-invitation-code-message*))
+                           (rooms-api:create-invitation (room-id room))
+                           (room-invitation room)))
+           (code (gethash "code" invitation)))
+      (show-message (format nil " Invitation code: ~A ~2% copied to clipboard" code)
+                    :style '(:gravity :center)
+                    :timeout nil)
+      (copy-to-clipboard code)
+      (setf (room-invitation room) invitation))))
+
+(define-command rooms-join-by-invitation-code (invitation-code) ((:string "Invitation code: "))
+  (init)
+  (let ((room-json (rooms-api:get-room-by-invitation invitation-code)))
+    (join-room room-json)))
