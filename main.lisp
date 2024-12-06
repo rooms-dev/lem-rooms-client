@@ -151,14 +151,14 @@
   (message "~A" (pretty-json params)))
 
 (defun setup-agent ()
-  (destroy-agent-if-alive)
-  (run-agent :access-token (config:access-token)
-             :on-message 'on-message
-             :on-connected 'on-connected
-             :on-disconnected 'on-disconnected
-             :on-edit 'on-edit
-             :on-users 'on-users
-             :on-comments 'on-comments))
+  (unless (agent-alive-p)
+    (run-agent :access-token (config:access-token)
+               :on-message 'on-message
+               :on-connected 'on-connected
+               :on-disconnected 'on-disconnected
+               :on-edit 'on-edit
+               :on-users 'on-users
+               :on-comments 'on-comments)))
 
 (defun ensure-user ()
   (unless (config:user)
@@ -175,6 +175,7 @@
 (defun init ()
   (ensure-sign-in)
   (ensure-user)
+  (setup-agent)
   (add-hook *post-command-hook* 'on-post-command)
   (add-hook *find-file-hook* 'on-find-file)
   (add-hook *exit-editor-hook* (lambda ()
@@ -239,7 +240,6 @@
                                           :existing t
                                           :directory (buffer-directory)))
          (room (rooms-api:create-room :name room-name :scope scope)))
-    (setup-agent)
     (let ((room-id (rooms-api:room-id room))
           (management-buffer (create-rooms-pane)))
       (enter-room room-id
@@ -260,7 +260,6 @@
     (if room
         (open-room-directory (room-directory room))
         (let ((management-buffer (create-rooms-pane)))
-          (setup-agent)
           (enter-room room-id
                       (rooms-api:room-websocket-url room-json)
                       :then (lambda (client-id)

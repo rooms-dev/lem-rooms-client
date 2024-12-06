@@ -1,7 +1,8 @@
 (uiop:define-package #:lem-rooms-client/agent
   (:use #:cl
         #:lem-rooms-client/utils)
-  (:export #:run-agent
+  (:export #:agent-alive-p
+           #:run-agent
            #:destroy-agent-if-alive
            #:notify
            #:call))
@@ -22,7 +23,7 @@
    (list "node"
          (namestring (asdf:system-relative-pathname :lem-rooms-client "./sdk/agent.js")))))
 
-(defun agent-alive-p (agent)
+(defun agent-alive-p (&optional (agent *agent*))
   (and agent (async-process:process-alive-p (agent-process agent))))
 
 (defun run-agent (&key on-message
