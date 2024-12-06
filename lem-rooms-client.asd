@@ -12,4 +12,5 @@
                (:file "room")
                (:file "buffer")
                (:file "management-buffer")
+               (:file "client")
                (:file "main")))
