@@ -54,29 +54,29 @@
   (quri:make-uri :defaults (rooms-url)
                  :path path))
 
-(defun headers (authorization)
+(defun headers (access-token)
   `(("content-type" . "application/json")
-    ,@(when (and authorization (access-token))
-        `(("Authorization" . ,(format nil "Bearer ~A" (access-token)))))))
+    ,@(when access-token
+        `(("Authorization" . ,(format nil "Bearer ~A" access-token))))))
 
 (defun content (&rest args)
   (with-output-to-string (out)
     (yason:encode (apply #'hash args) out)))
 
-(defun get (path &key authorization)
+(defun get (path &key access-token)
   (yason:parse (dex:get (url path)
-                        :headers (headers authorization))))
+                        :headers (headers access-token))))
 
 (defun post (path content)
   (yason:parse (dex:post (url path)
-                         :headers (headers t)
+                         :headers (headers (access-token))
                          :content content)))
 
-(defun get-user ()
-  (convert-to-user (get "/user" :authorization t)))
+(defun get-user (access-token)
+  (convert-to-user (get "/user" :access-token (access-token))))
 
 (defun get-rooms ()
-  (mapcar #'convert-to-room (get "/rooms" :authorization t)))
+  (mapcar #'convert-to-room (get "/rooms" :access-token (access-token))))
 
 (defun create-room (&key name scope)
   (convert-to-room
@@ -94,4 +94,4 @@
 (defun get-room-by-invitation (invitation-code)
   (convert-to-room
    (get (format nil "/invitations/~A/room" invitation-code)
-        :authorization t)))
+        :access-token (access-token))))

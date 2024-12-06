@@ -28,9 +28,6 @@
                        :path (buffer:path buffer)
                        :position (position-of point)))))
 
-(defun on-post-command ()
-  (notify-focus (current-point)))
-
 (defun on-before-change (point arg)
   (unless *inhibit-change-notification*
     (when-let* ((buffer (point-buffer point))
@@ -150,9 +147,9 @@
 (defun on-comments (params)
   (message "~A" (pretty-json params)))
 
-(defun setup-agent ()
+(defun setup-agent (access-token)
   (unless (agent-alive-p)
-    (run-agent :access-token (config:access-token)
+    (run-agent :access-token access-token
                :on-message 'on-message
                :on-connected 'on-connected
                :on-disconnected 'on-disconnected
@@ -160,9 +157,9 @@
                :on-users 'on-users
                :on-comments 'on-comments)))
 
-(defun ensure-user ()
+(defun set-user-if-not-set (access-token)
   (unless (config:user)
-    (let ((user (rooms-api:get-user)))
+    (let ((user (rooms-api:get-user access-token)))
       (setf (config:user)
             (list :id (rooms-api:user-id user)
                   :github-login (rooms-api:user-github-login user)
@@ -170,16 +167,11 @@
 
 (defun ensure-sign-in ()
   (unless (config:access-token)
-    (sign-in:rooms-sign-in)))
+    (sign-in:rooms-sign-in))
+  (config:access-token))
 
-(defun init ()
-  (ensure-sign-in)
-  (ensure-user)
-  (setup-agent)
-  (add-hook *post-command-hook* 'on-post-command)
-  (add-hook *find-file-hook* 'on-find-file)
-  (add-hook *exit-editor-hook* (lambda ()
-                                 (destroy-agent-if-alive))))
+(defun on-post-command ()
+  (notify-focus (current-point)))
 
 (defun on-find-file (buffer)
   (when-let (room (find-room-by-file (buffer-filename buffer)))
@@ -197,8 +189,16 @@
           (when (buffer-enable-undo-p buffer)
             (buffer-disable-undo buffer)
             (buffer-enable-undo buffer))))
-      (buffer:register-room-id-and-path buffer room-id path)
-      (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))))
+      (buffer:register-room-id-and-path buffer room-id path))))
+
+(defun init ()
+  (let ((access-token (ensure-sign-in)))
+    (setup-agent access-token)
+    (set-user-if-not-set access-token))
+  (add-hook *post-command-hook* 'on-post-command)
+  (add-hook *find-file-hook* 'on-find-file)
+  (add-hook *exit-editor-hook* (lambda () (destroy-agent-if-alive)))
+  (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))
 
 (defun create-rooms-pane ()
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
