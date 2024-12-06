@@ -1,6 +1,7 @@
 (defpackage :lem-rooms-client/management-buffer
   (:use #:cl
         #:lem
+        #:lem-rooms-client/editor
         #:lem-rooms-client/utils)
   (:export #:update))
 (in-package :lem-rooms-client/management-buffer)
