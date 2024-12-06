@@ -8,14 +8,7 @@
            #:sign-in-if-not-set-access-token))
 (in-package :lem-rooms-client/sign-in)
 
-(defun authorize-url ()
-  (let ((json (rooms-api:get "/github/authorize-url")))
-    (gethash "url" json)))
-
-(defun authenticate (code)
-  (rooms-api:get (format nil "/github/authenticate?code=~A" code)))
-
-(defun open-authorize-url-with-browser-frontend (authorize-url)
+(defun open-authorize-url-with-browser-frontend (url)
   (js-eval (current-window)
            (format nil "let x = document.createElement('a');~@
                         x.href = '~A';~@
@@ -23,25 +16,25 @@
                         document.body.appendChild(x);~@
                         x.click();~@
                         document.body.removeChild(x);"
-                   authorize-url)))
+                   url)))
 
 (defun prompt-code-with-browser-frontend ()
   (js-eval (current-window) "prompt('code: ')" :wait t))
 
 (defun sign-in-with-browser-frontend ()
-  (let ((authorize-url (authorize-url)))
+  (let ((authorize-url (rooms-api:get-authorize-url)))
     (open-authorize-url-with-browser-frontend authorize-url)
     (when-let ((code (prompt-for-string "code: ")))
       (setf (access-token)
-            (gethash "access_token" (authenticate code)))
+            (gethash "access_token" (rooms-api:authenticate code)))
       (message "Sign-in Successful"))))
 
 (defun sign-in ()
-  (let ((authorize-url (authorize-url)))
+  (let ((authorize-url (rooms-api:get-authorize-url)))
     (open-external-file authorize-url)
     (when-let ((code (prompt-for-string (format nil "~% ~A ~%~%code: " authorize-url))))
       (setf (access-token)
-            (gethash "access_token" (authenticate code)))
+            (gethash "access_token" (rooms-api:authenticate code)))
       (message "Sign-in Successful"))))
 
 (define-command rooms-sign-in () ()

@@ -16,6 +16,8 @@
            #:room-websocket-url
            #:get
            #:post
+           #:get-authorize-url
+           #:authenticate
            #:get-user
            #:get-rooms
            #:create-room
@@ -50,6 +52,12 @@
                 :scope (gethash "scope" value)
                 :websocket-url (gethash "websocket_url" value)))
 
+(defstruct authenticated
+  access-token)
+
+(defun convert-to-authenticated (value)
+  (make-authenticated :access-token (gethash "access_token" value)))
+
 (defun url (path)
   (quri:make-uri :defaults (rooms-url)
                  :path path))
@@ -72,8 +80,16 @@
                          :headers (headers (access-token))
                          :content content)))
 
+(defun get-authorize-url ()
+  (let ((json (get "/github/authorize-url")))
+    (gethash "url" json)))
+
+(defun authenticate (code)
+  (let ((response (get (format nil "/github/authenticate?code=~A" code))))
+    (convert-to-authenticated response)))
+
 (defun get-user (access-token)
-  (convert-to-user (get "/user" :access-token (access-token))))
+  (convert-to-user (get "/user" :access-token access-token)))
 
 (defun get-rooms ()
   (mapcar #'convert-to-room (get "/rooms" :access-token (access-token))))

@@ -23,9 +23,9 @@
 (defvar *inhibit-change-notification* nil)
 
 (defun init ()
-  (let ((access-token (sign-in-if-not-set-access-token)))
-    (run-agent-if-not-alive access-token)
-    (set-user-if-not-set access-token))
+  (let ((access-token (sign-in:sign-in-if-not-set-access-token)))
+    (set-user-if-not-set access-token)
+    (run-agent-if-not-alive access-token))
   (init-editor-hooks))
 
 (defun init-editor-hooks ()
