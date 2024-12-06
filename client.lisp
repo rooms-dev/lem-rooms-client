@@ -26,7 +26,9 @@
   (let ((access-token (sign-in-if-not-set-access-token)))
     (run-agent-if-not-alive access-token)
     (set-user-if-not-set access-token))
-  
+  (init-editor-hooks))
+
+(defun init-editor-hooks ()
   (add-hook *post-command-hook* 'on-post-command)
   (add-hook *find-file-hook* 'on-find-file)
   (add-hook *exit-editor-hook* (lambda () (agent:destroy-agent-if-alive)))
