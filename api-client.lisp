@@ -5,7 +5,9 @@
                     (#:sign-in #:lem-rooms-client/sign-in))
   (:export #:client
            #:client-access-token
-           #:init))
+           #:init
+           #:sign-in
+           #:sign-in-backdoor))
 (in-package #:lem-rooms-client/api-client)
 
 (defvar *client* nil)
@@ -31,9 +33,15 @@
   (set-user-if-not-set client))
 
 (defmethod sign-in ((client client))
-  (setf (client-access-token client)
-        (sign-in:sign-in-if-not-set-access-token))
+  (when (client-access-token client)
+    (setf (client-access-token client)
+          (sign-in:sign-in)))
   (values))
+
+(defmethod sign-in-backdoor ((client client) name)
+  (let ((response (rooms-api:backdoor name)))
+    (setf (client-access-token client)
+          (gethash "access_token" response))))
 
 (defmethod set-user-if-not-set ((client client))
   (unless (client-user client)

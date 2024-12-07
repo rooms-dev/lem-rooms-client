@@ -14,6 +14,7 @@
                     (#:buffer #:lem-rooms-client/buffer)
                     (#:management-buffer #:lem-rooms-client/management-buffer)
                     (#:client #:lem-rooms-client/client)
+                    (#:api-client #:lem-rooms-client/api-client)
                     (#:connected-hook #:lem-rooms-client/connected-hook)))
 (in-package #:lem-rooms-client)
 
@@ -56,7 +57,9 @@
          (directory (prompt-for-directory "Share directory: "
                                           :existing t
                                           :directory (buffer-directory)))
-         (room (rooms-api:create-room :name room-name :scope scope :access-token (config:access-token))))
+         (room (rooms-api:create-room :name room-name
+                                      :scope scope
+                                      :access-token (config:access-token))))
     (let ((room-id (rooms-api:room-id room))
           (management-buffer (create-rooms-pane)))
       (enter-room room-id
@@ -124,7 +127,8 @@
       (editor-error "Only the room owner can issue invitations"))
     (let* ((invitation (if (or (null (room-invitation room))
                                (prompt-for-y-or-n-p *recreation-invitation-code-message*))
-                           (rooms-api:create-invitation (room-id room) :access-token (config:access-token))
+                           (rooms-api:create-invitation (room-id room)
+                                                        :access-token (config:access-token))
                            (room-invitation room)))
            (code (gethash "code" invitation)))
       (show-message (format nil " Invitation code: ~A ~2% copied to clipboard" code)
@@ -135,5 +139,14 @@
 
 (define-command rooms-join-by-invitation-code (invitation-code) ((:string "Invitation code: "))
   (client:init)
-  (let ((room-json (rooms-api:get-room-by-invitation invitation-code :access-token (config:access-token))))
+  (let ((room-json (rooms-api:get-room-by-invitation invitation-code
+                                                     :access-token (config:access-token))))
     (join-room room-json)))
+
+(define-command rooms-sign-in () ()
+  (api-client:sign-in (api-client:client))
+  (message "Sign-in Successful"))
+
+(define-command rooms-backdoor (name) ((:string "Name: "))
+  (api-client:sign-in-backdoor (api-client:client) name)
+  (message "Sign-in Successful"))
