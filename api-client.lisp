@@ -2,12 +2,17 @@
   (:use #:cl)
   (:local-nicknames (#:config #:lem-rooms-client/config)
                     (#:rooms-api #:lem-rooms-client/rooms-api)
-                    (#:sign-in #:lem-rooms-client/sign-in))
+                    (#:sign-in #:lem-rooms-client/sign-in)
+                    (#:rooms-api #:lem-rooms-client/rooms-api))
   (:export #:client
            #:client-access-token
            #:init
            #:sign-in
-           #:sign-in-backdoor))
+           #:sign-in-backdoor
+           #:create-room
+           #:get-rooms
+           #:create-invitation
+           #:join-by-invitation-code))
 (in-package #:lem-rooms-client/api-client)
 
 (defvar *client* nil)
@@ -50,3 +55,20 @@
             (list :id (rooms-api:user-id user)
                   :github-login (rooms-api:user-github-login user)
                   :avatar-url (rooms-api:user-avatar-url user))))))
+
+(defmethod create-room ((client client) &key name scope)
+  (rooms-api:create-room :name name
+                         :scope scope
+                         :access-token (client-access-token client)))
+
+(defmethod get-rooms ((client client))
+  (rooms-api:get-rooms :access-token (client-access-token client)))
+
+(defmethod create-invitation ((client client) room-id)
+  (rooms-api:create-invitation room-id
+                               :access-token (client-access-token client)))
+
+(defmethod join-by-invitation-code ((client client) invitation-code)
+  (rooms-api:get-room-by-invitation invitation-code
+                                    :access-token (client-access-token client)))
+

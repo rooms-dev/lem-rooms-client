@@ -57,9 +57,7 @@
          (directory (prompt-for-directory "Share directory: "
                                           :existing t
                                           :directory (buffer-directory)))
-         (room (rooms-api:create-room :name room-name
-                                      :scope scope
-                                      :access-token (config:access-token))))
+         (room (api-client:create-room (api-client:client) :scope scope :name room-name)))
     (let ((room-id (rooms-api:room-id room))
           (management-buffer (create-rooms-pane)))
       (enter-room room-id
@@ -110,7 +108,7 @@
                                                    "~{~A ~}"
                                                    (mapcar #'rooms-api:user-github-login
                                                            (rooms-api:room-users room)))))
-                  :items (rooms-api:get-rooms :access-token (config:access-token))
+                  :items (api-client:get-rooms (api-client:client))
                   :select-callback (lambda (component room)
                                      (start-timer (make-idle-timer (lambda ()
                                                                      (join-room room)))
@@ -127,8 +125,8 @@
       (editor-error "Only the room owner can issue invitations"))
     (let* ((invitation (if (or (null (room-invitation room))
                                (prompt-for-y-or-n-p *recreation-invitation-code-message*))
-                           (rooms-api:create-invitation (room-id room)
-                                                        :access-token (config:access-token))
+                           (api-client:create-invitation (api-client:client)
+                                                         (room-id room))
                            (room-invitation room)))
            (code (gethash "code" invitation)))
       (show-message (format nil " Invitation code: ~A ~2% copied to clipboard" code)
@@ -139,8 +137,7 @@
 
 (define-command rooms-join-by-invitation-code (invitation-code) ((:string "Invitation code: "))
   (client:init)
-  (let ((room-json (rooms-api:get-room-by-invitation invitation-code
-                                                     :access-token (config:access-token))))
+  (let ((room-json (api-client:join-by-invitation-code (api-client:client) invitation-code)))
     (join-room room-json)))
 
 (define-command rooms-sign-in () ()
