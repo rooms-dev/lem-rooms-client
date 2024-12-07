@@ -3,8 +3,7 @@
         #:lem)
   (:export #:rooms-url
            #:access-token
-           #:user
-           #:user-name))
+           #:user))
 (in-package #:lem-rooms-client/config)
 
 (defun rooms-url ()
@@ -24,9 +23,3 @@
   (assert (getf plist :github-login))
   (assert (getf plist :avatar-url))
   (setf (config :rooms.user) plist))
-
-(let ((cache nil))
-  (defun user-name ()
-    (or cache
-        (setf cache
-              (getf (user) :github-login)))))

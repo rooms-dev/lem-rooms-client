@@ -45,7 +45,7 @@
 (defun notify-focus (point)
   (let ((buffer (point-buffer point)))
     (when (buffer:room-id buffer)
-      (agent-api:focus :name (config:user-name)
+      (agent-api:focus :name (api-client:user-name (api-client:client))
                        :room-id (buffer:room-id buffer)
                        :path (buffer:path buffer)
                        :position (position-of point)))))
@@ -199,9 +199,10 @@
   (open-room-directory (room-directory room)))
 
 (defun enter-room (room-id websocket-url &key then)
-  (let* ((enter-room-result (agent-api:enter-room :room-id room-id
-                                                  :user-name (config:user-name)
-                                                  :websocket-url websocket-url))
+  (let* ((enter-room-result
+           (agent-api:enter-room :room-id room-id
+                                 :user-name (api-client:user-name (api-client:client))
+                                 :websocket-url websocket-url))
          (client-id (gethash "clientID" enter-room-result)))
     (connected-hook:add (lambda ()
                           (funcall then client-id)))))

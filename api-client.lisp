@@ -6,6 +6,7 @@
                     (#:rooms-api #:lem-rooms-client/rooms-api))
   (:export #:client
            #:client-access-token
+           #:user-name
            #:init
            #:sign-in
            #:sign-in-backdoor
@@ -32,6 +33,9 @@
 
 (defmethod (setf client-user) :before (user (client client))
   (setf (config:user) user))
+
+(defmethod user-name ((client client))
+  (getf (client-user client) :github-login))
 
 (defmethod init ((client client))
   (sign-in client)
