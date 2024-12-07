@@ -23,16 +23,19 @@
       (setf *client* (make-instance 'client))))
 
 (defclass client ()
-  ((access-token :initform (config:access-token)
+  ((access-token :initform (lem:config :rooms.access-token)
                  :accessor client-access-token)
-   (user :initform (config:user)
+   (user :initform (lem:config :room.user)
          :accessor client-user)))
 
 (defmethod (setf client-access-token) :before (token (client client))
-  (setf (config:access-token) token))
+  (setf (lem:config :rooms.access-token) token))
 
 (defmethod (setf client-user) :before (user (client client))
-  (setf (config:user) user))
+  (assert (getf user :id))
+  (assert (getf user :github-login))
+  (assert (getf user :avatar-url))
+  (setf (lem:config :room.user) user))
 
 (defmethod user-name ((client client))
   (getf (client-user client) :github-login))
