@@ -62,7 +62,7 @@
   (set-user-if-not-set client))
 
 (defmethod sign-in ((client client))
-  (when (client-access-token client)
+  (unless (client-access-token client)
     (setf (client-access-token client)
           (sign-in:sign-in)))
   (values))
