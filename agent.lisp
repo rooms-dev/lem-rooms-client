@@ -18,7 +18,7 @@
   (make-array (length string) :initial-contents string :element-type 'character))
 
 (defun run-process (access-token)
-  (setf (uiop:getenv "ROOMS_ACCESS_TOKEN") access-token)
+  (setf (uiop:getenv "ROOMS_ACCESS_TOKEN") (to-simple-character-array access-token))
   (async-process:create-process
    (list "node"
          (namestring (asdf:system-relative-pathname :lem-rooms-client "./sdk/agent.js")))))
