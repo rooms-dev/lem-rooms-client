@@ -112,7 +112,7 @@
                   (api-client:connected (api-client:client))
                   (connected-hook:on-connect)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
-                    (management-buffer:update buffer :status :connected))
+                    (management-buffer:update buffer :client (api-client:client)))
                   (redraw-display)))))
 
 (defun on-disconnected (params)
@@ -121,7 +121,7 @@
                   (api-client:disconnected (api-client:client))
                   (connected-hook:disconnect)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
-                    (management-buffer:update buffer :status :disconnected))
+                    (management-buffer:update buffer :client (api-client:client)))
                   (redraw-display)))))
 
 (defun update-cursors (room users)
@@ -157,7 +157,7 @@
        (update-cursors room users)
        (management-buffer:update (room-management-buffer room)
                                  :users users
-                                 :status (api-client:client-connection-status (api-client:client)))
+                                 :client (api-client:client))
        (redraw-display)))))
 
 (defun on-comments (params)
@@ -190,7 +190,7 @@
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
     (api-client:connecting (api-client:client))
     (setf (not-switchable-buffer-p buffer) t)
-    (management-buffer:update buffer :status :connecting)
+    (management-buffer:update buffer :client (api-client:client))
     (make-rightside-window buffer :width 30)
     buffer))
 
@@ -199,7 +199,7 @@
 
 (defun start-room (room)
   (api-client:connected (api-client:client))
-  (management-buffer:update (room-management-buffer room) :status :connected)
+  (management-buffer:update (room-management-buffer room) :client (api-client:client))
   (open-room-directory (room-directory room)))
 
 (defun enter-room (room-id websocket-url &key then)

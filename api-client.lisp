@@ -95,4 +95,3 @@
 (defmethod join-by-invitation-code ((client client) invitation-code)
   (rooms-api:get-room-by-invitation invitation-code
                                     :access-token (client-access-token client)))
-

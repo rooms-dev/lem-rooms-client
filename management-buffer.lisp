@@ -3,10 +3,11 @@
         #:lem
         #:lem-rooms-client/editor
         #:lem-rooms-client/utils)
+  (:local-nicknames (#:api-client #:lem-rooms-client/api-client))
   (:export #:update))
 (in-package :lem-rooms-client/management-buffer)
 
-(defun update (buffer &key users status)
+(defun update (buffer &key users client)
   (erase-buffer buffer)
   (with-point ((point (buffer-point buffer) :left-inserting))
     (insert-string point
@@ -17,7 +18,7 @@
     (insert-character point #\newline)
     (insert-character point #\newline)
     (insert-string point (format nil "Status:~%"))
-    (ecase status
+    (ecase (api-client:client-connection-status client)
       (:connecting
        (insert-string point "Connecting..." :attribute (make-attribute :foreground "orange")))
       (:connected

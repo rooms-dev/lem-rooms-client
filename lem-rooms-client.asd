@@ -12,7 +12,7 @@
                (:file "user")
                (:file "room")
                (:file "buffer")
-               (:file "management-buffer")
                (:file "connected-hook")
                (:file "api-client")
+               (:file "management-buffer")
                (:file "main")))
