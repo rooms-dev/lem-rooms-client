@@ -253,6 +253,7 @@
                       (rooms-api:room-websocket-url room-json)
                       :then (lambda (client-id)
                               (let ((directory (agent-api:sync-directory :room-id room-id)))
+                                (assert directory)
                                 (start-room
                                  (register-room
                                   :client-id client-id
