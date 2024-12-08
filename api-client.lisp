@@ -6,7 +6,11 @@
                     (#:rooms-api #:lem-rooms-client/rooms-api))
   (:export #:client
            #:client-access-token
+           #:client-connection-status
            #:user-name
+           #:connected
+           #:disconnected
+           #:connecting
            #:init
            #:sign-in
            #:sign-in-backdoor
@@ -26,7 +30,11 @@
   ((access-token :initform (lem:config :rooms.access-token)
                  :accessor client-access-token)
    (user :initform (lem:config :room.user)
-         :accessor client-user)))
+         :accessor client-user)
+   (connection-status :initform nil
+                      :reader client-connection-status
+                      :writer set-client-connection-status
+                      :type (member nil :connecting :connected :disconnected))))
 
 (defmethod (setf client-access-token) :before (token (client client))
   (setf (lem:config :rooms.access-token) token))
@@ -39,6 +47,15 @@
 
 (defmethod user-name ((client client))
   (getf (client-user client) :github-login))
+
+(defmethod connected ((client client))
+  (set-client-connection-status :connected client))
+
+(defmethod disconnected ((client client))
+  (set-client-connection-status :disconnected client))
+
+(defmethod connecting ((client client))
+  (set-client-connection-status :connecting client))
 
 (defmethod init ((client client))
   (sign-in client)

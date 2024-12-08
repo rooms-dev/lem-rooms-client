@@ -109,6 +109,7 @@
 (defun on-connected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
+                  (api-client:connected (api-client:client))
                   (connected-hook:on-connect)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
                     (management-buffer:update buffer :status :connected))
@@ -117,6 +118,7 @@
 (defun on-disconnected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
+                  (api-client:disconnected (api-client:client))
                   (connected-hook:disconnect)
                   (let ((buffer (room-management-buffer (find-room-by-id room-id))))
                     (management-buffer:update buffer :status :disconnected))
@@ -155,7 +157,7 @@
        (update-cursors room users)
        (management-buffer:update (room-management-buffer room)
                                  :users users
-                                 :status (if (connected-hook:connected-p) :connected :disconnected))
+                                 :status (api-client:client-connection-status (api-client:client)))
        (redraw-display)))))
 
 (defun on-comments (params)
@@ -186,6 +188,7 @@
 
 (defun create-rooms-pane ()
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
+    (api-client:connecting (api-client:client))
     (setf (not-switchable-buffer-p buffer) t)
     (management-buffer:update buffer :status :connecting)
     (make-rightside-window buffer :width 30)
@@ -195,6 +198,7 @@
   (find-file directory))
 
 (defun start-room (room)
+  (api-client:connected (api-client:client))
   (management-buffer:update (room-management-buffer room) :status :connected)
   (open-room-directory (room-directory room)))
 
