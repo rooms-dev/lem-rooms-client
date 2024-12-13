@@ -21,7 +21,7 @@
   (setf (uiop:getenv "ROOMS_ACCESS_TOKEN") (to-simple-character-array access-token))
   (async-process:create-process
    (list "node"
-         (namestring (asdf:system-relative-pathname :lem-rooms-client "./sdk/agent.js")))))
+         (namestring (asdf:system-relative-pathname :lem-rooms-client "../editor-agent/index.js")))))
 
 (defun agent-alive-p (&optional (agent *agent*))
   (and agent (async-process:process-alive-p (agent-process agent))))

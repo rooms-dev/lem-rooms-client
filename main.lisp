@@ -164,7 +164,9 @@
 (defun on-comments (params)
   (send-event
    (lambda ()
-     (gethash "added" params))))
+     (when-let ((room (find-room-by-id (gethash "roomID" params))))
+       (management-pane:update (room-management-pane room)
+                               :adding-comments (management-pane:convert-comments (gethash "added" params)))))))
 
 (defun on-post-command ()
   (notify-focus (current-point)))
