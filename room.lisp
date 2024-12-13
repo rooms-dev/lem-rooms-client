@@ -2,7 +2,7 @@
   (:use #:cl
         #:alexandria)
   (:shadow #:room)
-  (:export #:room-management-buffer
+  (:export #:room-management-pane
            #:room-client-id
            #:room-id
            #:room-directory
@@ -20,16 +20,16 @@
   id
   client-id
   directory
-  management-buffer
+  management-pane
   invitation
   owner-p
   users)
 
-(defun register-room (&key room-id client-id directory management-buffer owner-p)
+(defun register-room (&key room-id client-id directory management-pane owner-p)
   (let ((room (make-room :id room-id
                          :client-id client-id
                          :directory directory
-                         :management-buffer management-buffer
+                         :management-pane management-pane
                          :owner-p owner-p)))
     (push room *rooms*)
     room))

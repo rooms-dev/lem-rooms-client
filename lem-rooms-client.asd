@@ -14,5 +14,5 @@
                (:file "buffer")
                (:file "connected-hook")
                (:file "api-client")
-               (:file "management-buffer")
+               (:file "management-pane")
                (:file "main")))

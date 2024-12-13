@@ -14,7 +14,7 @@
                     (#:agent-api #:lem-rooms-client/agent-api)
                     (#:sign-in #:lem-rooms-client/sign-in)
                     (#:buffer #:lem-rooms-client/buffer)
-                    (#:management-buffer #:lem-rooms-client/management-buffer)
+                    (#:management-pane #:lem-rooms-client/management-pane)
                     (#:api-client #:lem-rooms-client/api-client)
                     (#:connected-hook #:lem-rooms-client/connected-hook)))
 (in-package #:lem-rooms-client)
@@ -111,8 +111,8 @@
     (send-event (lambda ()
                   (api-client:connected (api-client:client))
                   (connected-hook:on-connect)
-                  (let ((buffer (room-management-buffer (find-room-by-id room-id))))
-                    (management-buffer:update buffer :client (api-client:client)))
+                  (management-pane:update (room-management-pane (find-room-by-id room-id))
+                                          :client (api-client:client))
                   (redraw-display)))))
 
 (defun on-disconnected (params)
@@ -120,8 +120,9 @@
     (send-event (lambda ()
                   (api-client:disconnected (api-client:client))
                   (connected-hook:disconnect)
-                  (let ((buffer (room-management-buffer (find-room-by-id room-id))))
-                    (management-buffer:update buffer :client (api-client:client)))
+                  (management-pane:update (room-management-pane (find-room-by-id room-id))
+                                          :client (api-client:client)
+                                          :users '())
                   (redraw-display)))))
 
 (defun update-cursors (room users)
@@ -155,15 +156,15 @@
                                                 (equal room-id (gethash "roomId" user)))
                                               users)))
        (update-cursors room users)
-       (management-buffer:update (room-management-buffer room)
-                                 :users users
-                                 :client (api-client:client))
+       (management-pane:update (room-management-pane room)
+                               :users users
+                               :client (api-client:client))
        (redraw-display)))))
 
 (defun on-comments (params)
   (send-event
    (lambda ()
-     (message "~A" (pretty-json params)))))
+     (gethash "added" params))))
 
 (defun on-post-command ()
   (notify-focus (current-point)))
@@ -187,19 +188,18 @@
       (buffer:register-room-id-and-path buffer room-id path))))
 
 (defun create-rooms-pane ()
-  (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
-    (api-client:connecting (api-client:client))
-    (setf (not-switchable-buffer-p buffer) t)
-    (management-buffer:update buffer :client (api-client:client))
-    (make-rightside-window buffer :width 30)
-    buffer))
+  (api-client:connecting (api-client:client))
+  (let ((pane (management-pane:make-management-pane)))
+    (management-pane:update pane :client (api-client:client))
+    (make-rightside-window (management-pane::management-pane-buffer pane) :width 30)
+    pane))
 
 (defun open-room-directory (directory)
   (find-file directory))
 
 (defun start-room (room)
   (api-client:connected (api-client:client))
-  (management-buffer:update (room-management-buffer room) :client (api-client:client))
+  (management-pane:update (room-management-pane room) :client (api-client:client))
   (open-room-directory (room-directory room)))
 
 (defun enter-room (room-id websocket-url &key then)
@@ -230,7 +230,7 @@
                                           :directory (buffer-directory)))
          (room (api-client:create-room (api-client:client) :scope scope :name room-name)))
     (let ((room-id (rooms-api:room-id room))
-          (management-buffer (create-rooms-pane)))
+          (management-pane (create-rooms-pane)))
       (enter-room room-id
                   (rooms-api:room-websocket-url room)
                   :then (lambda (client-id)
@@ -240,7 +240,7 @@
                             :room-id room-id
                             :client-id client-id
                             :directory directory
-                            :management-buffer management-buffer
+                            :management-pane management-pane
                             :owner-p t)))))))
 
 (defun join-room (room-json)
@@ -248,7 +248,7 @@
          (room (find-room-by-id room-id)))
     (if room
         (open-room-directory (room-directory room))
-        (let ((management-buffer (create-rooms-pane)))
+        (let ((management-pane (create-rooms-pane)))
           (enter-room room-id
                       (rooms-api:room-websocket-url room-json)
                       :then (lambda (client-id)
@@ -260,7 +260,7 @@
                                   :room-id room-id
                                   :directory (namestring
                                               (uiop:ensure-directory-pathname directory))
-                                  :management-buffer management-buffer
+                                  :management-pane management-pane
                                   :owner-p nil)))))))))
 
 (define-command rooms-list () ()
