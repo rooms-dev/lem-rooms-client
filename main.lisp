@@ -170,7 +170,7 @@
 (defun on-comments (params)
   (send-event
    (lambda ()
-     (when-let ((room (find-room-by-id (gethash "roomID" params))))
+     (when-let ((room (find-room-by-id (gethash "roomId" params))))
        (management-pane:update
         (room-management-pane room)
         :adding-comments (management-pane:convert-comments
@@ -179,7 +179,7 @@
 (defun on-file-changed (params)
   (send-event
    (lambda ()
-     (when-let ((room (find-room-by-id (gethash "roomID" params))))
+     (when-let ((room (find-room-by-id (gethash "roomId" params))))
        (dolist (file (gethash "added" params))
          (unless (uiop:file-exists-p file)
            (alexandria:write-string-into-file ""
