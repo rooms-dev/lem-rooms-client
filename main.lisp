@@ -165,28 +165,30 @@
   (send-event
    (lambda ()
      (when-let ((room (find-room-by-id (gethash "roomID" params))))
-       (management-pane:update (room-management-pane room)
-                               :adding-comments (management-pane:convert-comments (gethash "added" params)))))))
+       (management-pane:update
+        (room-management-pane room)
+        :adding-comments (management-pane:convert-comments
+                          (gethash "added" params)))))))
 
 (defun on-post-command ()
   (notify-focus (current-point)))
 
 (defun on-find-file (buffer)
   (when-let (room (find-room-by-file (buffer-filename buffer)))
-    (let ((room-id (room-id room))
-          (path (namestring
-                 (enough-namestring (buffer-filename buffer)
-                                    (room-directory room)))))
-      (let ((text (agent-api:open-file :room-id room-id
-                                       :path path
-                                       :text (buffer-text buffer))))
-        (when (and text (string/= text (buffer-text buffer)))
-          (erase-buffer buffer)
-          (insert-string (buffer-point buffer) text)
-          (buffer-start (buffer-point buffer))
-          (when (buffer-enable-undo-p buffer)
-            (buffer-disable-undo buffer)
-            (buffer-enable-undo buffer))))
+    (let* ((room-id (room-id room))
+           (path (namestring
+                  (enough-namestring (buffer-filename buffer)
+                                     (room-directory room))))
+           (text (agent-api:open-file :room-id room-id
+                                      :path path
+                                      :text (buffer-text buffer))))
+      (when (and text (string/= text (buffer-text buffer)))
+        (erase-buffer buffer)
+        (insert-string (buffer-point buffer) text)
+        (buffer-start (buffer-point buffer))
+        (when (buffer-enable-undo-p buffer)
+          (buffer-disable-undo buffer)
+          (buffer-enable-undo buffer)))
       (buffer:register-room-id-and-path buffer room-id path))))
 
 (defun create-rooms-pane ()
