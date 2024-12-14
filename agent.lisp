@@ -34,6 +34,7 @@
                        on-edit
                        on-users
                        on-comments
+                       on-file-changed
                        access-token)
   (assert (not (agent-alive-p *agent*)))
   (let* ((process (run-process access-token))
@@ -48,6 +49,7 @@
     (jsonrpc:expose jsonrpc "edit" on-edit)
     (jsonrpc:expose jsonrpc "users" on-users)
     (jsonrpc:expose jsonrpc "comments" on-comments)
+    (jsonrpc:expose jsonrpc "fileChanged" on-file-changed)
     (jsonrpc/client:client-connect-using-class
      jsonrpc
      'lem-lsp-mode/lem-stdio-transport:lem-stdio-transport

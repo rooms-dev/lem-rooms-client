@@ -34,7 +34,8 @@
                      :on-disconnected 'on-disconnected
                      :on-edit 'on-edit
                      :on-users 'on-users
-                     :on-comments 'on-comments)))
+                     :on-comments 'on-comments
+                     :on-file-changed 'on-file-changed)))
 
 (defun init-editor-hooks ()
   (add-hook *post-command-hook* 'on-post-command)
@@ -174,6 +175,12 @@
         (room-management-pane room)
         :adding-comments (management-pane:convert-comments
                           (gethash "added" params)))))))
+
+(defun on-file-changed (params)
+  (send-event
+   (lambda ()
+     ;; (message "~A" (pretty-json params))
+     )))
 
 (defun on-post-command ()
   (notify-focus (current-point)))
