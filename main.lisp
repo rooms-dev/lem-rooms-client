@@ -181,10 +181,11 @@
    (lambda ()
      (when-let ((room (find-room-by-id (gethash "roomId" params))))
        (dolist (file (gethash "added" params))
-         (unless (uiop:file-exists-p file)
-           (alexandria:write-string-into-file ""
-                                              (merge-pathnames file (room-directory room))
-                                              :if-does-not-exist :create)))))))
+         (let ((file (merge-pathnames file (room-directory room))))
+           (unless (uiop:file-exists-p file)
+             (alexandria:write-string-into-file ""
+                                                file
+                                                :if-does-not-exist :create))))))))
 
 (defun on-post-command ()
   (notify-focus (current-point)))
