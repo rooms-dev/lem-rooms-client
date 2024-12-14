@@ -28,7 +28,7 @@
 
 (defun sign-in-default ()
   (let ((authorize-url (rooms-api:get-authorize-url)))
-    (open-external-file authorize-url)
+    (ignore-errors (open-external-file authorize-url))
     (when-let ((code (prompt-for-string (format nil "~% ~A ~%~%code: " authorize-url))))
       (rooms-api:authenticated-access-token (rooms-api:authenticate code)))))
 
