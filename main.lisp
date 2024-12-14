@@ -179,8 +179,12 @@
 (defun on-file-changed (params)
   (send-event
    (lambda ()
-     ;; (message "~A" (pretty-json params))
-     )))
+     (when-let ((room (find-room-by-id (gethash "roomID" params))))
+       (dolist (file (gethash "added" params))
+         (unless (uiop:file-exists-p file)
+           (alexandria:write-string-into-file ""
+                                              (merge-pathnames file (room-directory room))
+                                              :if-does-not-exist :create)))))))
 
 (defun on-post-command ()
   (notify-focus (current-point)))
