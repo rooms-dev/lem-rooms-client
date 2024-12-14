@@ -191,9 +191,9 @@
           (buffer-enable-undo buffer)))
       (buffer:register-room-id-and-path buffer room-id path))))
 
-(defun create-rooms-pane ()
+(defun create-rooms-pane (room-id)
   (api-client:connecting (api-client:client))
-  (let ((pane (management-pane:make-management-pane)))
+  (let ((pane (management-pane:make-management-pane :room-id room-id)))
     (management-pane:update pane :client (api-client:client))
     (make-rightside-window (management-pane::management-pane-buffer pane) :width 30)
     pane))
@@ -233,8 +233,8 @@
                                           :existing t
                                           :directory (buffer-directory)))
          (room (api-client:create-room (api-client:client) :scope scope :name room-name)))
-    (let ((room-id (rooms-api:room-id room))
-          (management-pane (create-rooms-pane)))
+    (let* ((room-id (rooms-api:room-id room))
+           (management-pane (create-rooms-pane room-id)))
       (enter-room room-id
                   (rooms-api:room-websocket-url room)
                   :then (lambda (client-id)
@@ -252,7 +252,7 @@
          (room (find-room-by-id room-id)))
     (if room
         (open-room-directory (room-directory room))
-        (let ((management-pane (create-rooms-pane)))
+        (let ((management-pane (create-rooms-pane room-id)))
           (enter-room room-id
                       (rooms-api:room-websocket-url room-json)
                       :then (lambda (client-id)

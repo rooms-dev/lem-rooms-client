@@ -33,7 +33,9 @@
        comments))
 
 (defclass management-pane ()
-  ((buffer :initarg :buffer
+  ((room-id :initarg :room-id
+            :reader management-pane-room-id)
+   (buffer :initarg :buffer
            :reader management-pane-buffer)
    (status-buffer :initarg :status-buffer
                   :reader management-pane-status-buffer)
@@ -42,14 +44,23 @@
    (comment-buffer :initarg :comment-buffer
                    :reader management-pane-comment-buffer)))
 
-(defun make-management-pane ()
+(defun make-management-pane (&key room-id)
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
     (change-buffer-mode buffer 'rooms-mode)
-    (make-instance 'management-pane
-                   :buffer buffer
-                   :status-buffer (make-buffer "*Rooms status*" :temporary t :enable-undo-p nil)
-                   :users-buffer (make-buffer "*Rooms users*" :temporary t :enable-undo-p nil)
-                   :comment-buffer (make-buffer "*Rooms comments*" :temporary t :enable-undo-p nil))))
+    (let ((pane (make-instance 'management-pane
+                               :room-id room-id
+                               :buffer buffer
+                               :status-buffer (make-buffer "*Rooms status*"
+                                                           :temporary t
+                                                           :enable-undo-p nil)
+                               :users-buffer (make-buffer "*Rooms users*"
+                                                          :temporary t
+                                                          :enable-undo-p nil)
+                               :comment-buffer (make-buffer "*Rooms comments*"
+                                                            :temporary t
+                                                            :enable-undo-p nil))))
+      (setf (buffer-value buffer 'management-pane) pane)
+      pane)))
 
 (defun insert-color-text (point string color)
   (insert-string point
@@ -115,7 +126,9 @@
       (buffer-start (buffer-point buffer)))))
 
 (define-command rooms-comment () ()
-  (let ((room (room:find-room-by-file (buffer-directory (current-buffer)))))
+  (let ((room (if (mode-active-p (current-buffer) 'rooms-mode)
+                  (room:find-room-by-id (management-pane-room-id (buffer-value (current-buffer) 'management-pane)))
+                  (room:find-room-by-file (buffer-directory (current-buffer))))))
     (with-current-buffer (lem-rooms-client/management-pane::management-pane-buffer
                           (room:room-management-pane room))
       (with-current-window (frame-rightside-window (current-frame))
