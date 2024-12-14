@@ -107,12 +107,17 @@
   (message "~A" (gethash "message" params)))
 
 (defun on-connected (params)
-  (let ((room-id (gethash "roomId" params)))
+  (let ((room-id (gethash "roomId" params))
+        (users (gethash "users" params))
+        (comments (gethash "comments" params)))
     (send-event (lambda ()
                   (api-client:connected (api-client:client))
                   (connected-hook:on-connect)
                   (management-pane:update (room-management-pane (find-room-by-id room-id))
-                                          :client (api-client:client))
+                                          :client (api-client:client)
+                                          :users users
+                                          :adding-comments (management-pane:convert-comments
+                                                            comments))
                   (redraw-display)))))
 
 (defun on-disconnected (params)
