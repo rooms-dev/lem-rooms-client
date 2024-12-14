@@ -110,8 +110,6 @@
                                  (comment-user-color comment))
               (insert-string point (format nil ": ~A~%" (comment-text comment)))))
           (insert-buffer point comment-buffer)))
-      (delete-trailing-whitespace buffer)
-      (insert-character (buffer-point buffer) #\newline)
       (insert-string (buffer-point buffer) "press 'c' to comment")
       (insert-character (buffer-point buffer) #\newline)
       (buffer-start (buffer-point buffer)))))
