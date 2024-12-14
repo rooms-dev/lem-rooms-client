@@ -9,3 +9,5 @@
       :do (destructuring-bind (key value)
               (uiop:split-string line :separator '(#\=))
             (setf (uiop:getenv key) value)))
+
+(setf lem-rooms-client/agent::*agent-path* "../editor-agent/index.js")
