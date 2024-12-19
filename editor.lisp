@@ -6,7 +6,8 @@
            #:position-of
            #:move-to-position*
            #:browser-frontend-p
-           #:best-foreground-color))
+           #:best-foreground-color
+           #:with-save-cursor))
 (in-package #:lem-rooms-client/editor)
 
 (defun lem-to-lsp-position (position)
@@ -40,3 +41,14 @@
         (if (> luminance 0.5)
             "black"
             "white")))))
+
+(defun call-with-save-cursor (buffer function)
+  (let* ((point (buffer-point buffer))
+         (line (line-number-at-point point))
+         (charpos (point-charpos point)))
+    (prog1 (funcall function)
+      (move-to-line point line)
+      (line-offset point 0 charpos))))
+
+(defmacro with-save-cursor (buffer &body body)
+  `(call-with-save-cursor ,buffer (lambda () ,@body)))
