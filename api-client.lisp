@@ -12,6 +12,7 @@
            #:disconnected
            #:connecting
            #:init
+           #:sign-in-if-required
            #:sign-in
            #:sign-in-backdoor
            #:create-room
@@ -58,13 +59,16 @@
   (set-client-connection-status :connecting client))
 
 (defmethod init ((client client))
-  (sign-in client)
+  (sign-in-if-required client)
   (set-user-if-not-set client))
 
-(defmethod sign-in ((client client))
+(defmethod sign-in-if-required ((client client))
   (unless (client-access-token client)
-    (setf (client-access-token client)
-          (sign-in:sign-in)))
+    (sign-in client)))
+
+(defmethod sign-in ((client client))
+  (setf (client-access-token client)
+        (sign-in:sign-in))
   (values))
 
 (defmethod sign-in-backdoor ((client client) name)

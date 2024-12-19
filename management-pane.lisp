@@ -22,14 +22,16 @@
 (defstruct comment
   user-name
   user-color
-  text)
+  text
+  date)
 
 (defun convert-comments (comments)
   (map 'list
        (lambda (comment)
          (make-comment :user-name (gethash "name" (gethash "user" comment))
                        :user-color (gethash "color" (gethash "user" comment))
-                       :text (gethash "text" comment)))
+                       :text (gethash "text" comment)
+                       :date (local-time:parse-timestring (gethash "date" comment))))
        comments))
 
 (defclass management-pane ()
@@ -80,7 +82,8 @@
                                    :foreground (best-foreground-color (background-color))))
         (insert-character point #\newline)
         (insert-character point #\newline)
-        (insert-string point (format nil "Status:~%"))
+        (insert-string point "Status:" :attribute (make-attribute :bold t))
+        (insert-character point #\newline)
         (let ((status-buffer (management-pane-status-buffer pane)))
           (when client-p
             (erase-buffer status-buffer)
@@ -100,7 +103,8 @@
                                 :attribute (make-attribute :foreground "red"))))))
           (insert-buffer point status-buffer))
         (insert-character point #\newline)
-        (insert-string point (format nil "Users:~%"))
+        (insert-string point "Users:" :attribute (make-attribute :bold t))
+        (insert-character point #\newline)
         (let ((users-buffer (management-pane-users-buffer pane)))
           (when users-p
             (erase-buffer users-buffer)
@@ -111,17 +115,26 @@
                   (insert-color-text point (format nil " ~A " name) color)
                   (insert-character point #\newline)))))
           (insert-buffer point users-buffer))
-        (insert-string point "Comments:")
+        (insert-string point "Comments:" :attribute (make-attribute :bold t))
+        (insert-character point #\newline)
+        (insert-string (buffer-point buffer) "press 'c' to comment")
+        (insert-character point #\newline)
         (insert-character point #\newline)
         (let ((comment-buffer (management-pane-comment-buffer pane)))
           (with-point ((point (buffer-point comment-buffer) :left-inserting))
             (dolist (comment adding-comments)
+              (buffer-start point)
+              (insert-string point
+                             (format nil
+                                     "[~2,'0D:~2,'0D:~2,'0D]"
+                                     (local-time:timestamp-hour (comment-date comment))
+                                     (local-time:timestamp-minute (comment-date comment))
+                                     (local-time:timestamp-second (comment-date comment))))
               (insert-color-text point
                                  (format nil " ~A " (comment-user-name comment))
                                  (comment-user-color comment))
               (insert-string point (format nil ": ~A~%" (comment-text comment)))))
           (insert-buffer point comment-buffer)))
-      (insert-string (buffer-point buffer) "press 'c' to comment")
       (insert-character (buffer-point buffer) #\newline)
       (buffer-start (buffer-point buffer)))))
 
