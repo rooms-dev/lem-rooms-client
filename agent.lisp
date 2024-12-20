@@ -19,8 +19,7 @@
 (defun to-simple-character-array (string)
   (make-array (length string) :initial-contents string :element-type 'character))
 
-(defun run-process (access-token)
-  (setf (uiop:getenv "ROOMS_ACCESS_TOKEN") (to-simple-character-array access-token))
+(defun run-process ()
   (async-process:create-process
    (list "node"
          (namestring (probe-file *agent-path*)))))
@@ -34,10 +33,9 @@
                        on-edit
                        on-users
                        on-comments
-                       on-file-changed
-                       access-token)
+                       on-file-changed)
   (assert (not (agent-alive-p *agent*)))
-  (let* ((process (run-process access-token))
+  (let* ((process (run-process))
          (jsonrpc (jsonrpc:make-client))
          (stream (lem-lsp-mode/async-process-stream:make-input-stream
                   process

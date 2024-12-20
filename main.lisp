@@ -23,13 +23,12 @@
 
 (defun init ()
   (api-client:init (api-client:client))
-  (run-agent-if-not-alive (api-client:client-access-token (api-client:client)))
+  (run-agent-if-not-alive)
   (init-editor-hooks))
 
-(defun run-agent-if-not-alive (access-token)
+(defun run-agent-if-not-alive ()
   (unless (agent:agent-alive-p)
-    (agent:run-agent :access-token access-token
-                     :on-message 'on-message
+    (agent:run-agent :on-message 'on-message
                      :on-connected 'on-connected
                      :on-disconnected 'on-disconnected
                      :on-edit 'on-edit
@@ -227,7 +226,8 @@
   (let* ((enter-room-result
            (agent-api:enter-room :room-id room-id
                                  :user-name (api-client:user-name (api-client:client))
-                                 :websocket-url websocket-url))
+                                 :websocket-url websocket-url
+                                 :access-token (api-client:client-access-token (api-client:client))))
          (client-id (gethash "clientID" enter-room-result)))
     (connected-hook:add (lambda ()
                           (funcall then client-id)))))

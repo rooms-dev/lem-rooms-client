@@ -25,11 +25,12 @@
                       :path path
                       :ops ops)))
 
-(defun enter-room (&key room-id user-name websocket-url)
+(defun enter-room (&key room-id user-name websocket-url access-token)
   (agent:call "enter-room"
               (hash :room-id room-id
                     :user-name user-name
-                    :websocket-url websocket-url)))
+                    :websocket-url websocket-url
+                    :access-token access-token)))
 
 (defun share-directory (&key room-id path)
   (agent:notify "share-directory"
