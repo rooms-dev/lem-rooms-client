@@ -12,7 +12,6 @@
                     (#:agent #:lem-rooms-client/agent)
                     (#:rooms-api #:lem-rooms-client/rooms-api)
                     (#:agent-api #:lem-rooms-client/agent-api)
-                    (#:sign-in #:lem-rooms-client/sign-in)
                     (#:buffer #:lem-rooms-client/buffer)
                     (#:management-pane #:lem-rooms-client/management-pane)
                     (#:api-client #:lem-rooms-client/api-client)
@@ -22,8 +21,8 @@
 (defvar *inhibit-change-notification* nil)
 
 (defun init ()
-  (api-client:init (api-client:client))
   (run-agent-if-not-alive)
+  (api-client:init (api-client:client))
   (init-editor-hooks))
 
 (defun run-agent-if-not-alive ()
@@ -104,7 +103,8 @@
          (redraw-display))))))
 
 (defun on-message (params)
-  (message "~A" (gethash "message" params)))
+  (send-event (lambda ()
+                (message "agent: ~A" (gethash "message" params)))))
 
 (defun on-connected (params)
   (let ((room-id (gethash "roomId" params))
@@ -334,7 +334,8 @@
     (join-room room-json)))
 
 (define-command rooms-sign-in () ()
-  (api-client:sign-in (api-client:client))
+  (setf (api-client:client-access-token (api-client:client)) nil) ;TODO: encapsulation
+  (init)
   (message "Sign-in Successful"))
 
 (define-command rooms-backdoor (name) ((:string "Name: "))

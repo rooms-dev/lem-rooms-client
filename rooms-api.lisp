@@ -16,7 +16,6 @@
            #:authenticated-access-token
            #:get
            #:post
-           #:get-authorize-url
            #:authenticate
            #:get-user
            #:get-rooms
@@ -79,10 +78,6 @@
   (yason:parse (dex:post (url path)
                          :headers (headers access-token)
                          :content content)))
-
-(defun get-authorize-url ()
-  (let ((json (get "/github/authorize-url")))
-    (gethash "url" json)))
 
 (defun authenticate (code)
   (let ((response (get (format nil "/github/authenticate?code=~A" code))))

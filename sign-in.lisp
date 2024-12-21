@@ -3,7 +3,8 @@
         #:lem
         #:alexandria
         #:lem-rooms-client/config)
-  (:local-nicknames (:rooms-api :lem-rooms-client/rooms-api))
+  (:local-nicknames (:rooms-api :lem-rooms-client/rooms-api)
+                    (:agent-api :lem-rooms-client/agent-api))
   (:export #:sign-in))
 (in-package :lem-rooms-client/sign-in)
 
@@ -21,13 +22,13 @@
   (js-eval (current-window) "prompt('code: ')" :wait t))
 
 (defun sign-in-with-browser-frontend ()
-  (let ((authorize-url (rooms-api:get-authorize-url)))
+  (let ((authorize-url (agent-api:get-github-authorize-url)))
     (open-authorize-url-with-browser-frontend authorize-url)
     (when-let ((code (prompt-for-string "code: ")))
       (rooms-api:authenticated-access-token (rooms-api:authenticate code)))))
 
 (defun sign-in-default ()
-  (let ((authorize-url (rooms-api:get-authorize-url)))
+  (let ((authorize-url (agent-api:get-github-authorize-url)))
     (ignore-errors (open-external-file authorize-url))
     (when-let ((code (prompt-for-string (format nil "~% ~A ~%~%code: " authorize-url))))
       (rooms-api:authenticated-access-token (rooms-api:authenticate code)))))
