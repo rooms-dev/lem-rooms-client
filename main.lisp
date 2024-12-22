@@ -291,16 +291,16 @@
                   :columns '("Room" "Scope" "Owner" "Users")
                   :column-function (lambda (component room)
                                      (declare (ignore component))
-                                     (list (format nil "~A  " (rooms-api:room-name room))
-                                           (format nil "~A  " (rooms-api:room-scope room))
+                                     (list (format nil "~A  " (agent-api:room-name room))
+                                           (format nil "~A  " (agent-api:room-scope room))
                                            (format nil
                                                    "~A  "
-                                                   (rooms-api:user-github-login
-                                                    (rooms-api:room-owner room)))
+                                                   (agent-api:user-github-login
+                                                    (agent-api:room-owner room)))
                                            (format nil
                                                    "~{~A ~}"
-                                                   (mapcar #'rooms-api:user-github-login
-                                                           (rooms-api:room-users room)))))
+                                                   (mapcar #'agent-api:user-github-login
+                                                           (agent-api:room-users room)))))
                   :items (api-client:get-rooms (api-client:client))
                   :select-callback (lambda (component room)
                                      (start-timer (make-idle-timer (lambda ()

@@ -2,12 +2,20 @@
   (:use #:cl
         #:lem-rooms-client/utils)
   (:local-nicknames (#:agent #:lem-rooms-client/agent))
+  (:shadow #:room)
   (:export #:user-id
            #:user-github-login
            #:user-avatar-url
+           #:room-id
+           #:room-name
+           #:room-owner
+           #:room-users
+           #:room-scope
+           #:room-websocket-url
            #:get-github-authorize-url
            #:authenticate
            #:get-user
+           #:get-rooms
            #:focus
            #:edit
            #:enter-room
@@ -28,6 +36,22 @@
              :github-login (gethash "name" value)
              :avatar-url (gethash "avatar_url" value)))
 
+(defstruct room
+  id
+  name
+  owner
+  users
+  scope
+  websocket-url)
+
+(defun convert-to-room (value)
+  (make-room :id (gethash "id" value)
+             :name (gethash "name" value)
+             :owner (convert-to-user (gethash "owner" value))
+             :users (mapcar #'convert-to-user (gethash "users" value))
+             :scope (gethash "scope" value)
+             :websocket-url (gethash "websocket_url" value)))
+
 (defun get-github-authorize-url ()
   (let ((response (agent:call "rooms/github-authorize-url" (hash))))
     (gethash "url" response)))
@@ -38,6 +62,11 @@
 
 (defun get-user (&key access-token)
   (convert-to-user (agent:call "rooms/get-user" (hash :access-token access-token))))
+
+(defun get-rooms (&key access-token)
+  (mapcar #'convert-to-room
+          (agent:call "rooms/get-rooms"
+                      (hash :access-token access-token))))
 
 (defun focus (&key name room-id path position)
   (agent:notify "focus"

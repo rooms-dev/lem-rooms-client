@@ -90,7 +90,7 @@
                          :access-token (client-access-token client)))
 
 (defmethod get-rooms ((client client))
-  (rooms-api:get-rooms :access-token (client-access-token client)))
+  (agent-api:get-rooms :access-token (client-access-token client)))
 
 (defmethod create-invitation ((client client) room-id)
   (rooms-api:create-invitation room-id
