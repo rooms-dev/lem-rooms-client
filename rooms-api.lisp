@@ -15,7 +15,6 @@
            #:room-websocket-url
            #:get
            #:post
-           #:get-user
            #:get-rooms
            #:create-room
            #:backdoor
@@ -70,9 +69,6 @@
   (yason:parse (dex:post (url path)
                          :headers (headers access-token)
                          :content content)))
-
-(defun get-user (access-token)
-  (convert-to-user (get "/user" :access-token access-token)))
 
 (defun get-rooms (&key access-token)
   (mapcar #'convert-to-room (get "/rooms" :access-token access-token)))

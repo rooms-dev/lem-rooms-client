@@ -2,8 +2,12 @@
   (:use #:cl
         #:lem-rooms-client/utils)
   (:local-nicknames (#:agent #:lem-rooms-client/agent))
-  (:export #:get-github-authorize-url
+  (:export #:user-id
+           #:user-github-login
+           #:user-avatar-url
+           #:get-github-authorize-url
            #:authenticate
+           #:get-user
            #:focus
            #:edit
            #:enter-room
@@ -14,6 +18,16 @@
            #:get-comments))
 (in-package #:lem-rooms-client/agent-api)
 
+(defstruct user
+  id
+  github-login
+  avatar-url)
+
+(defun convert-to-user (value)
+  (make-user :id (gethash "id" value)
+             :github-login (gethash "name" value)
+             :avatar-url (gethash "avatar_url" value)))
+
 (defun get-github-authorize-url ()
   (let ((response (agent:call "rooms/github-authorize-url" (hash))))
     (gethash "url" response)))
@@ -21,6 +35,9 @@
 (defun authenticate (code)
   (let ((response (agent:call "rooms/github-authenticate" (hash :code code))))
     response))
+
+(defun get-user (&key access-token)
+  (convert-to-user (agent:call "rooms/get-user" (hash :access-token access-token))))
 
 (defun focus (&key name room-id path position)
   (agent:notify "focus"

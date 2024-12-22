@@ -3,7 +3,7 @@
   (:local-nicknames (#:config #:lem-rooms-client/config)
                     (#:rooms-api #:lem-rooms-client/rooms-api)
                     (#:sign-in #:lem-rooms-client/sign-in)
-                    (#:rooms-api #:lem-rooms-client/rooms-api))
+                    (#:agent-api #:lem-rooms-client/agent-api))
   (:export #:client
            #:client-access-token
            #:client-connection-status
@@ -78,11 +78,11 @@
 
 (defmethod set-user-if-not-set ((client client))
   (unless (client-user client)
-    (let ((user (rooms-api:get-user (client-access-token client))))
+    (let ((user (agent-api:get-user :access-token (client-access-token client))))
       (setf (client-user client)
-            (list :id (rooms-api:user-id user)
-                  :github-login (rooms-api:user-github-login user)
-                  :avatar-url (rooms-api:user-avatar-url user))))))
+            (list :id (agent-api:user-id user)
+                  :github-login (agent-api:user-github-login user)
+                  :avatar-url (agent-api:user-avatar-url user))))))
 
 (defmethod create-room ((client client) &key name scope)
   (rooms-api:create-room :name name
