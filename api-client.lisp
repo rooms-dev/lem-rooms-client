@@ -1,7 +1,6 @@
 (uiop:define-package #:lem-rooms-client/api-client
   (:use #:cl)
   (:local-nicknames (#:config #:lem-rooms-client/config)
-                    (#:rooms-api #:lem-rooms-client/rooms-api)
                     (#:sign-in #:lem-rooms-client/sign-in)
                     (#:agent-api #:lem-rooms-client/agent-api))
   (:export #:client
@@ -72,7 +71,7 @@
   (values))
 
 (defmethod sign-in-backdoor ((client client) name)
-  (let ((response (rooms-api:backdoor name)))
+  (let ((response (agent-api:sign-in :name name)))
     (setf (client-access-token client)
           (gethash "access_token" response))))
 
@@ -85,7 +84,7 @@
                   :avatar-url (agent-api:user-avatar-url user))))))
 
 (defmethod create-room ((client client) &key name scope)
-  (rooms-api:create-room :name name
+  (agent-api:create-room :name name
                          :scope scope
                          :access-token (client-access-token client)))
 
@@ -93,9 +92,9 @@
   (agent-api:get-rooms :access-token (client-access-token client)))
 
 (defmethod create-invitation ((client client) room-id)
-  (rooms-api:create-invitation room-id
+  (agent-api:create-invitation :room-id room-id
                                :access-token (client-access-token client)))
 
 (defmethod join-by-invitation-code ((client client) invitation-code)
-  (rooms-api:get-room-by-invitation invitation-code
+  (agent-api:get-room-by-invitation :invitation-code invitation-code
                                     :access-token (client-access-token client)))

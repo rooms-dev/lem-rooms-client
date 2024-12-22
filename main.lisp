@@ -10,7 +10,6 @@
   (:local-nicknames (#:cursor #:lem-rooms-client/cursor)
                     (#:config #:lem-rooms-client/config)
                     (#:agent #:lem-rooms-client/agent)
-                    (#:rooms-api #:lem-rooms-client/rooms-api)
                     (#:agent-api #:lem-rooms-client/agent-api)
                     (#:buffer #:lem-rooms-client/buffer)
                     (#:management-pane #:lem-rooms-client/management-pane)
@@ -250,10 +249,10 @@
                                           :existing t
                                           :directory (buffer-directory)))
          (room (api-client:create-room (api-client:client) :scope scope :name room-name)))
-    (let* ((room-id (rooms-api:room-id room))
+    (let* ((room-id (agent-api:room-id room))
            (management-pane (create-rooms-pane room-id)))
       (enter-room room-id
-                  (rooms-api:room-websocket-url room)
+                  (agent-api:room-websocket-url room)
                   :then (lambda (client-id)
                           (agent-api:share-directory :room-id room-id :path directory)
                           (start-room
@@ -265,13 +264,13 @@
                             :owner-p t)))))))
 
 (defun join-room (room-json)
-  (let* ((room-id (rooms-api:room-id room-json))
+  (let* ((room-id (agent-api:room-id room-json))
          (room (find-room-by-id room-id)))
     (if room
         (open-room-directory (room-directory room))
         (let ((management-pane (create-rooms-pane room-id)))
           (enter-room room-id
-                      (rooms-api:room-websocket-url room-json)
+                      (agent-api:room-websocket-url room-json)
                       :then (lambda (client-id)
                               (let ((directory (agent-api:sync-directory :room-id room-id)))
                                 (assert directory)
@@ -339,5 +338,7 @@
   (message "Sign-in Successful"))
 
 (define-command rooms-backdoor (name) ((:string "Name: "))
+  (run-agent-if-not-alive)
+  (init-editor-hooks)
   (api-client:sign-in-backdoor (api-client:client) name)
   (message "Sign-in Successful"))

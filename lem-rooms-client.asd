@@ -4,7 +4,6 @@
   :components ((:file "utils")
                (:file "editor")
                (:file "config")
-               (:file "rooms-api")
                (:file "cursor")
                (:file "agent")
                (:File "agent-api")

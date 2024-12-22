@@ -3,8 +3,7 @@
         #:lem
         #:alexandria
         #:lem-rooms-client/config)
-  (:local-nicknames (:rooms-api :lem-rooms-client/rooms-api)
-                    (:agent-api :lem-rooms-client/agent-api))
+  (:local-nicknames (:agent-api :lem-rooms-client/agent-api))
   (:export #:sign-in))
 (in-package :lem-rooms-client/sign-in)
 

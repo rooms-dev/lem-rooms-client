@@ -12,10 +12,14 @@
            #:room-users
            #:room-scope
            #:room-websocket-url
+           #:sign-in
            #:get-github-authorize-url
            #:authenticate
            #:get-user
            #:get-rooms
+           #:create-room
+           #:create-invitation
+           #:get-room-by-invitation
            #:focus
            #:edit
            #:enter-room
@@ -52,6 +56,9 @@
              :scope (gethash "scope" value)
              :websocket-url (gethash "websocket_url" value)))
 
+(defun sign-in (&key name)
+  (agent:call "rooms/sign-in" (hash :name name)))
+
 (defun get-github-authorize-url ()
   (let ((response (agent:call "rooms/github-authorize-url" (hash))))
     (gethash "url" response)))
@@ -67,6 +74,24 @@
   (mapcar #'convert-to-room
           (agent:call "rooms/get-rooms"
                       (hash :access-token access-token))))
+
+(defun create-room (&key access-token name scope)
+  (convert-to-room
+   (agent:call "rooms/create-room"
+               (hash :name name
+                     :scope scope
+                     :access-token access-token))))
+
+(defun create-invitation (&key room-id access-token)
+  (agent:call "rooms/create-invitation"
+              (hash :room-id room-id
+                    :access-token access-token)))
+
+(defun get-room-by-invitation (&key invitation-code access-token)
+  (convert-to-room
+   (agent:call "rooms/get-room-by-invitation"
+               (hash :invitation-code invitation-code
+                     :access-token access-token))))
 
 (defun focus (&key name room-id path position)
   (agent:notify "focus"
