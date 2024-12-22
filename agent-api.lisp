@@ -3,6 +3,7 @@
         #:lem-rooms-client/utils)
   (:local-nicknames (#:agent #:lem-rooms-client/agent))
   (:export #:get-github-authorize-url
+           #:authenticate
            #:focus
            #:edit
            #:enter-room
@@ -16,6 +17,10 @@
 (defun get-github-authorize-url ()
   (let ((response (agent:call "rooms/github-authorize-url" (hash))))
     (gethash "url" response)))
+
+(defun authenticate (code)
+  (let ((response (agent:call "rooms/github-authenticate" (hash :code code))))
+    response))
 
 (defun focus (&key name room-id path position)
   (agent:notify "focus"

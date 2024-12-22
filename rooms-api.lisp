@@ -13,10 +13,8 @@
            #:room-users
            #:room-scope
            #:room-websocket-url
-           #:authenticated-access-token
            #:get
            #:post
-           #:authenticate
            #:get-user
            #:get-rooms
            #:create-room
@@ -51,12 +49,6 @@
                 :scope (gethash "scope" value)
                 :websocket-url (gethash "websocket_url" value)))
 
-(defstruct authenticated
-  access-token)
-
-(defun convert-to-authenticated (value)
-  (make-authenticated :access-token (gethash "access_token" value)))
-
 (defun url (path)
   (quri:make-uri :defaults (lem-rooms-client/config:rooms-url)
                  :path path))
@@ -78,10 +70,6 @@
   (yason:parse (dex:post (url path)
                          :headers (headers access-token)
                          :content content)))
-
-(defun authenticate (code)
-  (let ((response (get (format nil "/github/authenticate?code=~A" code))))
-    (convert-to-authenticated response)))
 
 (defun get-user (access-token)
   (convert-to-user (get "/user" :access-token access-token)))

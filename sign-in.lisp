@@ -25,13 +25,13 @@
   (let ((authorize-url (agent-api:get-github-authorize-url)))
     (open-authorize-url-with-browser-frontend authorize-url)
     (when-let ((code (prompt-for-string "code: ")))
-      (rooms-api:authenticated-access-token (rooms-api:authenticate code)))))
+      (gethash "access_token" (agent-api:authenticate code)))))
 
 (defun sign-in-default ()
   (let ((authorize-url (agent-api:get-github-authorize-url)))
     (ignore-errors (open-external-file authorize-url))
     (when-let ((code (prompt-for-string (format nil "~% ~A ~%~%code: " authorize-url))))
-      (rooms-api:authenticated-access-token (rooms-api:authenticate code)))))
+      (gethash "access_token" (agent-api:authenticate code)))))
 
 (defun sign-in ()
   (if (lem-rooms-client/editor:browser-frontend-p)
