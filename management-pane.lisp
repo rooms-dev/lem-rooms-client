@@ -26,7 +26,6 @@
   date)
 
 (defun convert-comments (comments)
-  (defparameter $comments comments)
   (map 'list
        (lambda (comment)
          (make-comment :user-name (gethash "name" (gethash "user" comment))
@@ -144,8 +143,7 @@
     (let ((room (if (mode-active-p (current-buffer) 'rooms-mode)
                     (room:find-room-by-id (management-pane-room-id (buffer-value (current-buffer) 'management-pane)))
                     (room:find-room-by-file (buffer-directory (current-buffer))))))
-      (with-current-buffer (lem-rooms-client/management-pane::management-pane-buffer
-                            (room:room-management-pane room))
+      (with-current-buffer (management-pane-buffer (room:room-management-pane room))
         (with-current-window (frame-rightside-window (current-frame))
           (buffer-end (current-point))
           (let ((text (prompt-for-string "Comment: "

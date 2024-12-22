@@ -222,12 +222,13 @@
   (open-room-directory (room-directory room)))
 
 (defun enter-room (room-id websocket-url &key then)
-  (let* ((enter-room-result
-           (agent-api:enter-room :room-id room-id
-                                 :user-name (api-client:user-name (api-client:client))
-                                 :websocket-url websocket-url
-                                 :access-token (api-client:client-access-token (api-client:client))))
-         (client-id (gethash "clientID" enter-room-result)))
+  (let* ((response
+           (agent-api:enter-room
+            :room-id room-id
+            :user-name (api-client:user-name (api-client:client))
+            :websocket-url websocket-url
+            :access-token (api-client:client-access-token (api-client:client))))
+         (client-id (gethash "clientID" response)))
     (connected-hook:add (lambda ()
                           (funcall then client-id)))))
 
