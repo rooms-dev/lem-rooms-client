@@ -19,7 +19,16 @@
 (defun to-simple-character-array (string)
   (make-array (length string) :initial-contents string :element-type 'character))
 
+(defun installed-nodejs-p ()
+  (zerop
+   (nth-value 2
+              (uiop:run-program '("which" "node")
+                                :output :string
+                                :ignore-error-status t))))
+
 (defun run-process ()
+  (unless (installed-nodejs-p)
+    (error "Node.js is not installed"))
   (async-process:create-process
    (list "node"
          (namestring (probe-file *agent-path*)))))
