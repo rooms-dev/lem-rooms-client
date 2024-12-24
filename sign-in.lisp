@@ -1,8 +1,7 @@
 (uiop:define-package :lem-rooms-client/sign-in
   (:use #:cl
         #:lem
-        #:alexandria
-        #:lem-rooms-client/config)
+        #:alexandria)
   (:local-nicknames (:agent-api :lem-rooms-client/agent-api))
   (:export #:sign-in))
 (in-package :lem-rooms-client/sign-in)

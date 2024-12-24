@@ -3,7 +3,6 @@
   :serial t
   :components ((:file "utils")
                (:file "editor")
-               (:file "config")
                (:file "cursor")
                (:file "agent")
                (:File "agent-api")

@@ -8,7 +8,6 @@
         #:lem-rooms-client/room
         #:lem-rooms-client/user)
   (:local-nicknames (#:cursor #:lem-rooms-client/cursor)
-                    (#:config #:lem-rooms-client/config)
                     (#:agent #:lem-rooms-client/agent)
                     (#:agent-api #:lem-rooms-client/agent-api)
                     (#:buffer #:lem-rooms-client/buffer)
