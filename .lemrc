@@ -5,9 +5,22 @@
 (asdf:load-asd (probe-file "lem-rooms-client.asd"))
 (ql:quickload :lem-rooms-client)
 
-(loop :for line :in (uiop:read-file-lines ".env")
-      :do (destructuring-bind (key value)
-              (uiop:split-string line :separator '(#\=))
-            (setf (uiop:getenv key) value)))
+(defun parse-env (file)
+  (let (env)
+    (loop :for line :in (uiop:read-file-lines file)
+          :do (let ((line (string-trim '(#\Space #\Tab #\Newline) line)))
+                (let ((pos (position #\# line)))
+                  (when pos
+                    (setf line (subseq line 0 pos))))
+                (cond ((zerop (length line)) nil)
+                      ((search "=" line)
+                       (destructuring-bind (key value)
+                           (uiop:split-string line :separator '(#\=))
+                         (push (cons key value) env))))))
+    (nreverse env)))
+
+(when (uiop:file-exists-p ".env")
+  (loop :for (key . value) :in (parse-env ".env")
+        :do (setf (uiop:getenv key) value)))
 
 ;(setf lem-rooms-client/agent::*agent-path* "../editor-agent/index.js")
