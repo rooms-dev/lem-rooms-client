@@ -8,7 +8,7 @@
            #:call))
 (in-package #:lem-rooms-client/agent)
 
-(defparameter *agent-path* "sdk/agent.js")
+(defparameter *agent-path* (asdf:system-relative-pathname :lem-rooms-client "sdk/agent.js"))
 
 (defvar *agent* nil)
 
