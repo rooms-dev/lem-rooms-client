@@ -146,9 +146,8 @@
 
 (define-command rooms-comment () ()
   (with-save-cursor (current-buffer)
-    (let ((room (if (mode-active-p (current-buffer) 'rooms-mode)
-                    (room:find-room-by-id (management-pane-room-id (buffer-value (current-buffer) 'management-pane)))
-                    (room:find-room-by-file (buffer-directory (current-buffer))))))
+    (when-let* ((pane (current-management-pane))
+                (room (room:find-room-by-id (management-pane-room-id pane))))
       (with-current-buffer (management-pane-buffer (room:room-management-pane room))
         (with-current-window (frame-rightside-window (current-frame))
           (buffer-end (current-point))
