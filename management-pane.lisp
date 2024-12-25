@@ -1,5 +1,6 @@
 (defpackage :lem-rooms-client/management-pane
   (:use #:cl
+        #:alexandria
         #:lem
         #:lem-rooms-client/editor
         #:lem-rooms-client/utils)
@@ -8,6 +9,7 @@
                     (#:agent-api #:lem-rooms-client/agent-api))
   (:export #:convert-comments
            #:make-management-pane
+           #:current-management-pane
            #:update))
 (in-package :lem-rooms-client/management-pane)
 
@@ -45,6 +47,10 @@
                  :reader management-pane-users-buffer)
    (comment-buffer :initarg :comment-buffer
                    :reader management-pane-comment-buffer)))
+
+(defun current-management-pane ()
+  (when-let (window (frame-rightside-window (current-frame)))
+    (buffer-value (window-buffer window) 'management-pane)))
 
 (defun make-management-pane (&key room-id)
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
