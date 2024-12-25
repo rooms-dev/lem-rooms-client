@@ -78,3 +78,8 @@ Users who have received an invitation can enter the private room using the invit
 ```
 M-x rooms-join-by-invitation-code
 ```
+
+## Note
+Please note that Rooms is currently in alpha stage.
+While we're excited to share this project with you, you may encounter bugs or incomplete features.
+We appreciate your understanding and welcome any feedback to help improve the service.
