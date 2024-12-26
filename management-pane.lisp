@@ -10,6 +10,9 @@
   (:export #:convert-comments
            #:make-management-pane
            #:current-management-pane
+           #:connected
+           #:disconnected
+           #:connecting
            #:update))
 (in-package :lem-rooms-client/management-pane)
 
@@ -46,7 +49,11 @@
    (users-buffer :initarg :users-buffer
                  :reader management-pane-users-buffer)
    (comment-buffer :initarg :comment-buffer
-                   :reader management-pane-comment-buffer)))
+                   :reader management-pane-comment-buffer)
+   (connection-status :initform nil
+                      :reader management-pane-connection-status
+                      :writer set-management-pane-connection-status
+                      :type (member nil :connecting :connected :disconnected))))
 
 (defun current-management-pane ()
   (when-let (window (frame-rightside-window (current-frame)))
@@ -70,13 +77,22 @@
       (setf (buffer-value buffer 'management-pane) pane)
       pane)))
 
+(defmethod connected ((pane management-pane))
+  (set-management-pane-connection-status :connected pane))
+
+(defmethod disconnected ((pane management-pane))
+  (set-management-pane-connection-status :disconnected pane))
+
+(defmethod connecting ((pane management-pane))
+  (set-management-pane-connection-status :connecting pane))
+
 (defun insert-color-text (point string color)
   (insert-string point
                  string
                  :attribute (make-attribute :foreground (best-foreground-color color)
                                             :background color)))
 
-(defun update (pane &key (client nil client-p) (users nil users-p) adding-comments)
+(defun update (pane &key (users nil users-p) adding-comments)
   (with-save-cursor (current-buffer)
     (let ((buffer (management-pane-buffer pane)))
       (with-buffer-read-only buffer nil
@@ -92,10 +108,10 @@
           (insert-string point "Status:" :attribute (make-attribute :bold t))
           (insert-character point #\newline)
           (let ((status-buffer (management-pane-status-buffer pane)))
-            (when client-p
+            (when-let (status (management-pane-connection-status pane))
               (erase-buffer status-buffer)
               (with-point ((point (buffer-point status-buffer) :left-inserting))
-                (ecase (api-client:client-connection-status client)
+                (ecase status
                   (:connecting
                    (insert-string point
                                   "Connecting..."

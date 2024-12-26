@@ -109,24 +109,23 @@
         (users (gethash "users" params))
         (comments (gethash "comments" params)))
     (send-event (lambda ()
-                  (api-client:connected (api-client:client))
                   (connected-hook:on-connect)
-                  (management-pane:update (room-management-pane (find-room-by-id room-id))
-                                          :client (api-client:client)
-                                          :users users
-                                          :adding-comments (management-pane:convert-comments
-                                                            comments))
-                  (redraw-display)))))
+                  (let ((pane (room-management-pane (find-room-by-id room-id))))
+                    (management-pane:connected pane)
+                    (management-pane:update pane
+                                            :users users
+                                            :adding-comments (management-pane:convert-comments
+                                                              comments))
+                    (redraw-display))))))
 
 (defun on-disconnected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
-                  (api-client:disconnected (api-client:client))
-                  (connected-hook:disconnect)
-                  (management-pane:update (room-management-pane (find-room-by-id room-id))
-                                          :client (api-client:client)
-                                          :users '())
-                  (redraw-display)))))
+                  (let ((pane (room-management-pane (find-room-by-id room-id))))
+                    (management-pane:disconnected pane)
+                    (connected-hook:disconnect)
+                    (management-pane:update pane :users '())
+                    (redraw-display))))))
 
 (defun update-cursors (room users)
   (let ((client-id (room-client-id room)))
@@ -159,9 +158,7 @@
                                                 (equal room-id (gethash "roomId" user)))
                                               users)))
        (update-cursors room users)
-       (management-pane:update (room-management-pane room)
-                               :users users
-                               :client (api-client:client))
+       (management-pane:update (room-management-pane room) :users users)
        (redraw-display)))))
 
 (defun on-comments (params)
@@ -206,9 +203,9 @@
       (buffer:register-room-id-and-path buffer room-id path))))
 
 (defun create-rooms-pane (room-id)
-  (api-client:connecting (api-client:client))
   (let ((pane (management-pane:make-management-pane :room-id room-id)))
-    (management-pane:update pane :client (api-client:client))
+    (management-pane:connecting pane)
+    (management-pane:update pane)
     (make-rightside-window (management-pane::management-pane-buffer pane) :width 30)
     pane))
 
@@ -216,8 +213,8 @@
   (find-file directory))
 
 (defun start-room (room)
-  (api-client:connected (api-client:client))
-  (management-pane:update (room-management-pane room) :client (api-client:client))
+  (management-pane:connected (lem-rooms-client/room:room-management-pane room))
+  (management-pane:update (room-management-pane room))
   (open-room-directory (room-directory room)))
 
 (defun enter-room (room-id websocket-url &key then)
