@@ -178,7 +178,7 @@
          (let ((file (merge-pathnames file (room-directory room))))
            (unless (uiop:file-exists-p file)
              (alexandria:write-string-into-file ""
-                                                file
+                                                (ensure-directories-exist file)
                                                 :if-does-not-exist :create))))))))
 
 (defun on-post-command ()
