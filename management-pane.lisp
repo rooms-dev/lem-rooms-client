@@ -1,4 +1,4 @@
-(defpackage :lem-rooms-client/management-pane
+(uiop:define-package :lem-rooms-client/management-pane
   (:use #:cl
         #:alexandria
         #:lem
@@ -8,7 +8,7 @@
                     (#:room #:lem-rooms-client/room)
                     (#:agent-api #:lem-rooms-client/agent-api))
   (:export #:convert-comments
-           #:make-management-pane
+           #:create-pane
            #:current-management-pane
            #:connected
            #:disconnected
@@ -76,6 +76,13 @@
                                                             :enable-undo-p nil))))
       (setf (buffer-value buffer 'management-pane) pane)
       pane)))
+
+(defun create-pane (room-id)
+  (let ((pane (make-management-pane :room-id room-id)))
+    (connecting pane)
+    (update pane)
+    (make-rightside-window (management-pane-buffer pane) :width 30)
+    pane))
 
 (defmethod connected ((pane management-pane))
   (set-management-pane-connection-status :connected pane))
