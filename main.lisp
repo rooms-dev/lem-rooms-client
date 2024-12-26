@@ -202,13 +202,10 @@
           (buffer-enable-undo buffer)))
       (buffer:register-room-id-and-path buffer room-id path))))
 
-(defun open-room-directory (directory)
-  (find-file directory))
-
 (defun start-room (room)
   (management-pane:connected (lem-rooms-client/room:room-management-pane room))
   (management-pane:update (room-management-pane room))
-  (open-room-directory (room-directory room)))
+  (management-pane:open-management-pane room))
 
 (defun enter-room (room-id websocket-url &key then)
   (let* ((response
@@ -257,7 +254,7 @@
   (let* ((room-id (agent-api:room-id room-json))
          (room (find-room-by-id room-id)))
     (if room
-        (open-room-directory (room-directory room))
+        (management-pane:open-management-pane room)
         (let ((management-pane (management-pane:create-pane room-id)))
           (enter-room room-id
                       (agent-api:room-websocket-url room-json)
@@ -321,6 +318,13 @@
   (init)
   (let ((room-json (api-client:join-by-invitation-code (api-client:client) invitation-code)))
     (join-room room-json)))
+
+(define-command rooms-toggle-pane () ()
+  (cond ((management-pane:current-management-pane)
+         (close-rightside-window))
+        (t
+         ;; TODO: 複数のroomを開いている場合にどうするか
+         (management-pane:open-management-pane (first lem-rooms-client/room::*rooms*)))))
 
 (define-command rooms-sign-in () ()
   (setf (api-client:client-access-token (api-client:client)) nil) ;TODO: encapsulation

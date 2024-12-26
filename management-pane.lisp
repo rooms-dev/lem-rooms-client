@@ -9,6 +9,7 @@
                     (#:agent-api #:lem-rooms-client/agent-api))
   (:export #:convert-comments
            #:create-pane
+           #:open-management-pane
            #:current-management-pane
            #:connected
            #:disconnected
@@ -78,11 +79,23 @@
       pane)))
 
 (defun create-pane (room-id)
+  (close-rightside-window)
   (let ((pane (make-management-pane :room-id room-id)))
     (connecting pane)
     (update pane)
     (make-rightside-window (management-pane-buffer pane) :width 30)
     pane))
+
+(defun redisplay-management-pane (room)
+  (close-rightside-window)
+  (let ((pane (room:room-management-pane room)))
+    (update pane)
+    (make-rightside-window (management-pane-buffer pane) :width 30)
+    pane))
+
+(defun open-management-pane (room)
+  (redisplay-management-pane room)
+  (find-file (room:room-directory room)))
 
 (defmethod connected ((pane management-pane))
   (set-management-pane-connection-status :connected pane))

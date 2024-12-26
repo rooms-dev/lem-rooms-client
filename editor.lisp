@@ -7,7 +7,8 @@
            #:move-to-position*
            #:browser-frontend-p
            #:best-foreground-color
-           #:with-save-cursor))
+           #:with-save-cursor
+           #:close-rightside-window))
 (in-package #:lem-rooms-client/editor)
 
 (defun lem-to-lsp-position (position)
@@ -52,3 +53,7 @@
 
 (defmacro with-save-cursor (buffer &body body)
   `(call-with-save-cursor ,buffer (lambda () ,@body)))
+
+(defun close-rightside-window ()
+  (when (frame-rightside-window (current-frame))
+    (delete-rightside-window)))
