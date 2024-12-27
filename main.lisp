@@ -97,8 +97,9 @@
                      (insert-string point text)
                      (setf edited t))))))))
        (when edited
-         (notify-focus (current-point))
-         (redraw-display))))))
+         (when (zerop (lem::event-queue-length))
+           (notify-focus (current-point))
+           (redraw-display)))))))
 
 (defun on-message (params)
   (send-event (lambda ()
