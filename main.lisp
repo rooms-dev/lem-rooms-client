@@ -206,7 +206,7 @@
       (buffer:register-room-id-and-path buffer room-id path))))
 
 (defun start-room (room)
-  (management-pane:connected (lem-rooms-client/room:room-management-pane room))
+  (management-pane:connected (room-management-pane room))
   (management-pane:update (room-management-pane room))
   (management-pane:open-management-pane room))
 
