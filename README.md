@@ -1,8 +1,8 @@
 # What is Rooms?
 
-Rooms is an editor-based social networking service for engineers that makes programming a more fun, exciting and connected experience.  
-It provides a pair programming environment where you can share your coding scenes, share your skills and interact with other great engineers.  
-It delivers an experience where you don't just write code, but create, learn and inspire each other, That's what Rooms.
+Rooms is an editor-based social network service for engineers, designed to make programming more enjoyable, inspiring, and connected.
+It provides a pair/group programming environment where you can share your coding sessions, exchange your knowledge and skills, and interact with other amazing engineers.
+It is not just a place to write code, but it's a space to create, learn, and inspire eath other. That's what Rooms.
 
 Would you like to try it?  
 Then, I'll introduce how to experience Rooms with [Lem](https://github.com/lem-project/lem) as the client.
