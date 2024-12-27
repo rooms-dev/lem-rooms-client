@@ -3,8 +3,9 @@
         #:alexandria)
   (:shadow #:room)
   (:export #:room-management-pane
-           #:room-client-id
            #:room-id
+           #:room-name
+           #:room-client-id
            #:room-directory
            #:room-invitation
            #:room-owner-p
@@ -18,6 +19,7 @@
 
 (defstruct room
   id
+  name
   client-id
   directory
   management-pane
@@ -25,8 +27,9 @@
   owner-p
   users)
 
-(defun register-room (&key room-id client-id directory management-pane owner-p)
+(defun register-room (&key room-id room-name client-id directory management-pane owner-p)
   (let ((room (make-room :id room-id
+                         :name room-name
                          :client-id client-id
                          :directory directory
                          :management-pane management-pane

@@ -97,8 +97,9 @@
                      (insert-string point text)
                      (setf edited t))))))))
        (when edited
-         (notify-focus (current-point))
-         (redraw-display))))))
+         (when (zerop (lem::event-queue-length))
+           (notify-focus (current-point))
+           (redraw-display)))))))
 
 (defun on-message (params)
   (send-event (lambda ()
@@ -135,8 +136,10 @@
             (color (gethash "color" user))
             (room-id (gethash "roomId" user))
             (path (gethash "path" user))
-            (position (gethash "position" user)))
-        (unless (equal client-id id)
+            (position (gethash "position" user))
+            (active-p (gethash "active" user)))
+        (when (and (not (equal client-id id))
+                   active-p)
           (when-let (buffer (buffer:find-buffer-by-room-and-path room-id path))
             (when (eq buffer (window-buffer (current-window)))
               (cursor:set-cursor buffer id name color (lsp-to-lem-position position)))))))))
@@ -178,7 +181,7 @@
          (let ((file (merge-pathnames file (room-directory room))))
            (unless (uiop:file-exists-p file)
              (alexandria:write-string-into-file ""
-                                                file
+                                                (ensure-directories-exist file)
                                                 :if-does-not-exist :create))))))))
 
 (defun on-post-command ()
@@ -203,11 +206,11 @@
       (buffer:register-room-id-and-path buffer room-id path))))
 
 (defun start-room (room)
-  (management-pane:connected (lem-rooms-client/room:room-management-pane room))
+  (management-pane:connected (room-management-pane room))
   (management-pane:update (room-management-pane room))
   (management-pane:open-management-pane room))
 
-(defun enter-room (room-id websocket-url &key then)
+(defun enter-room (&key room-id websocket-url then)
   (let* ((response
            (agent-api:enter-room
             :room-id room-id
@@ -238,13 +241,14 @@
          (room (api-client:create-room (api-client:client) :scope scope :name room-name)))
     (let* ((room-id (agent-api:room-id room))
            (management-pane (management-pane:create-pane room-id)))
-      (enter-room room-id
-                  (agent-api:room-websocket-url room)
+      (enter-room :room-id room-id
+                  :websocket-url (agent-api:room-websocket-url room)
                   :then (lambda (client-id)
                           (agent-api:share-directory :room-id room-id :path directory)
                           (start-room
                            (register-room
                             :room-id room-id
+                            :room-name (agent-api:room-name room)
                             :client-id client-id
                             :directory directory
                             :management-pane management-pane
@@ -256,15 +260,16 @@
     (if room
         (management-pane:open-management-pane room)
         (let ((management-pane (management-pane:create-pane room-id)))
-          (enter-room room-id
-                      (agent-api:room-websocket-url room-json)
+          (enter-room :room-id room-id
+                      :websocket-url (agent-api:room-websocket-url room-json)
                       :then (lambda (client-id)
                               (let ((directory (agent-api:sync-directory :room-id room-id)))
                                 (assert directory)
                                 (start-room
                                  (register-room
-                                  :client-id client-id
                                   :room-id room-id
+                                  :room-name (agent-api:room-name room-json)
+                                  :client-id client-id
                                   :directory (namestring
                                               (uiop:ensure-directory-pathname directory))
                                   :management-pane management-pane
