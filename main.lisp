@@ -210,7 +210,7 @@
   (management-pane:update (room-management-pane room))
   (management-pane:open-management-pane room))
 
-(defun enter-room (room-id websocket-url &key then)
+(defun enter-room (&key room-id websocket-url then)
   (let* ((response
            (agent-api:enter-room
             :room-id room-id
@@ -241,8 +241,8 @@
          (room (api-client:create-room (api-client:client) :scope scope :name room-name)))
     (let* ((room-id (agent-api:room-id room))
            (management-pane (management-pane:create-pane room-id)))
-      (enter-room room-id
-                  (agent-api:room-websocket-url room)
+      (enter-room :room-id room-id
+                  :websocket-url (agent-api:room-websocket-url room)
                   :then (lambda (client-id)
                           (agent-api:share-directory :room-id room-id :path directory)
                           (start-room
@@ -259,8 +259,8 @@
     (if room
         (management-pane:open-management-pane room)
         (let ((management-pane (management-pane:create-pane room-id)))
-          (enter-room room-id
-                      (agent-api:room-websocket-url room-json)
+          (enter-room :room-id room-id
+                      :websocket-url (agent-api:room-websocket-url room-json)
                       :then (lambda (client-id)
                               (let ((directory (agent-api:sync-directory :room-id room-id)))
                                 (assert directory)
