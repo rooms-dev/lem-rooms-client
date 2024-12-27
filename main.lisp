@@ -248,6 +248,7 @@
                           (start-room
                            (register-room
                             :room-id room-id
+                            :room-name (agent-api:room-name room)
                             :client-id client-id
                             :directory directory
                             :management-pane management-pane
@@ -268,6 +269,7 @@
                                  (register-room
                                   :client-id client-id
                                   :room-id room-id
+                                  :room-name (agent-api:room-name room-json)
                                   :directory (namestring
                                               (uiop:ensure-directory-pathname directory))
                                   :management-pane management-pane
