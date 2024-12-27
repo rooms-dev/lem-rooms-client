@@ -267,9 +267,9 @@
                                 (assert directory)
                                 (start-room
                                  (register-room
-                                  :client-id client-id
                                   :room-id room-id
                                   :room-name (agent-api:room-name room-json)
+                                  :client-id client-id
                                   :directory (namestring
                                               (uiop:ensure-directory-pathname directory))
                                   :management-pane management-pane

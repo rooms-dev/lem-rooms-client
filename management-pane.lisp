@@ -25,6 +25,9 @@
 
 (define-key *rooms-mode-keymap* "c" 'rooms-comment)
 
+(define-attribute sub-header-attribute
+  (t :bold t))
+
 (defstruct comment
   user-name
   user-color
@@ -41,7 +44,9 @@
        comments))
 
 (defclass management-pane ()
-  ((room-id :initarg :room-id
+  ((room :initarg :room
+         :reader management-pane-room)
+   (room-id :initarg :room-id
             :reader management-pane-room-id)
    (buffer :initarg :buffer
            :reader management-pane-buffer)
@@ -60,10 +65,11 @@
   (when-let (window (frame-rightside-window (current-frame)))
     (buffer-value (window-buffer window) 'management-pane)))
 
-(defun make-management-pane (&key room-id)
+(defun make-management-pane (&key room room-id)
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
     (change-buffer-mode buffer 'rooms-mode)
     (let ((pane (make-instance 'management-pane
+                               :room room
                                :room-id room-id
                                :buffer buffer
                                :status-buffer (make-buffer "*Rooms status*"
@@ -114,7 +120,8 @@
 
 (defun update (pane &key (users nil users-p) adding-comments)
   (with-save-cursor (current-buffer)
-    (let ((buffer (management-pane-buffer pane)))
+    (let ((buffer (management-pane-buffer pane))
+          (room (room:find-room-by-id (management-pane-room-id pane))))
       (with-buffer-read-only buffer nil
         (erase-buffer buffer)
         (with-point ((point (buffer-point buffer) :left-inserting))
@@ -125,7 +132,12 @@
                                      :foreground (best-foreground-color (background-color))))
           (insert-character point #\newline)
           (insert-character point #\newline)
-          (insert-string point "Status:" :attribute (make-attribute :bold t))
+          (insert-string point "Name:" :attribute 'sub-header-attribute)
+          (insert-character point #\newline)
+          (insert-string point (room:room-name room))
+          (insert-character point #\newline)
+          (insert-character point #\newline)
+          (insert-string point "Status:" :attribute 'sub-header-attribute)
           (insert-character point #\newline)
           (let ((status-buffer (management-pane-status-buffer pane)))
             (when-let (status (management-pane-connection-status pane))
@@ -146,7 +158,7 @@
                                   :attribute (make-attribute :foreground "red"))))))
             (insert-buffer point status-buffer))
           (insert-character point #\newline)
-          (insert-string point "Users:" :attribute (make-attribute :bold t))
+          (insert-string point "Users:" :attribute 'sub-header-attribute)
           (insert-character point #\newline)
           (let ((users-buffer (management-pane-users-buffer pane)))
             (when users-p
@@ -158,7 +170,7 @@
                     (insert-color-text point (format nil " ~A " name) color)
                     (insert-character point #\newline)))))
             (insert-buffer point users-buffer))
-          (insert-string point "Comments:" :attribute (make-attribute :bold t))
+          (insert-string point "Comments:" :attribute 'sub-header-attribute)
           (insert-character point #\newline)
           (insert-string (buffer-point buffer) "press 'c' to comment")
           (insert-character point #\newline)

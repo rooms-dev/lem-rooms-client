@@ -3,8 +3,9 @@
         #:alexandria)
   (:shadow #:room)
   (:export #:room-management-pane
-           #:room-client-id
            #:room-id
+           #:room-name
+           #:room-client-id
            #:room-directory
            #:room-invitation
            #:room-owner-p
