@@ -14,7 +14,7 @@
            #:connected
            #:disconnected
            #:connecting
-           #:update))
+           #:redraw))
 (in-package :lem-rooms-client/management-pane)
 
 (define-major-mode rooms-mode nil
@@ -89,16 +89,16 @@
   (let ((pane (make-management-pane :room-id room-id)))
     (connecting pane)
     ;; BUG:
-    ;; register-roomをする前にupdateを呼び出すと、find-room-by-idでroomがnilになるのでエラーになる
+    ;; register-roomをする前にredrawを呼び出すと、find-room-by-idでroomがnilになるのでエラーになる
     ;; なので一旦ここはコメントアウトして、根本的なデータ構造の修正をする必要がある
-    ;; (update pane)
+    ;; (redraw pane)
     (make-rightside-window (management-pane-buffer pane) :width 30)
     pane))
 
 (defun redisplay-management-pane (room)
   (close-rightside-window)
   (let ((pane (room:room-management-pane room)))
-    (update pane)
+    (redraw pane)
     (make-rightside-window (management-pane-buffer pane) :width 30)
     pane))
 
@@ -121,7 +121,7 @@
                  :attribute (make-attribute :foreground (best-foreground-color color)
                                             :background color)))
 
-(defun update (pane &key (users nil users-p) adding-comments)
+(defmethod redraw ((pane management-pane) &key (users nil users-p) adding-comments)
   (with-save-cursor (current-buffer)
     (let ((buffer (management-pane-buffer pane))
           (room (room:find-room-by-id (management-pane-room-id pane))))

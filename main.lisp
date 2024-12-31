@@ -113,7 +113,7 @@
                   (connected-hook:on-connect)
                   (let ((pane (room-management-pane (find-room-by-id room-id))))
                     (management-pane:connected pane)
-                    (management-pane:update pane
+                    (management-pane:redraw pane
                                             :users users
                                             :adding-comments (management-pane:convert-comments
                                                               comments))
@@ -125,7 +125,7 @@
                   (let ((pane (room-management-pane (find-room-by-id room-id))))
                     (management-pane:disconnected pane)
                     (connected-hook:disconnect)
-                    (management-pane:update pane :users '())
+                    (management-pane:redraw pane :users '())
                     (redraw-display))))))
 
 (defun update-cursors (room users)
@@ -161,14 +161,14 @@
                                                 (equal room-id (gethash "roomId" user)))
                                               users)))
        (update-cursors room users)
-       (management-pane:update (room-management-pane room) :users users)
+       (management-pane:redraw (room-management-pane room) :users users)
        (redraw-display)))))
 
 (defun on-comments (params)
   (send-event
    (lambda ()
      (when-let ((room (find-room-by-id (gethash "roomId" params))))
-       (management-pane:update
+       (management-pane:redraw
         (room-management-pane room)
         :adding-comments (management-pane:convert-comments
                           (gethash "added" params)))))))
@@ -207,7 +207,7 @@
 
 (defun start-room (room)
   (management-pane:connected (room-management-pane room))
-  (management-pane:update (room-management-pane room))
+  (management-pane:redraw (room-management-pane room))
   (management-pane:open-management-pane room))
 
 (defun enter-room (&key room-id websocket-url then)
