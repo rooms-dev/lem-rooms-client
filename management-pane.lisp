@@ -88,7 +88,10 @@
   (close-rightside-window)
   (let ((pane (make-management-pane :room-id room-id)))
     (connecting pane)
-    (update pane)
+    ;; BUG:
+    ;; register-roomをする前にupdateを呼び出すと、find-room-by-idでroomがnilになるのでエラーになる
+    ;; なので一旦ここはコメントアウトして、根本的なデータ構造の修正をする必要がある
+    ;; (update pane)
     (make-rightside-window (management-pane-buffer pane) :width 30)
     pane))
 
@@ -122,6 +125,7 @@
   (with-save-cursor (current-buffer)
     (let ((buffer (management-pane-buffer pane))
           (room (room:find-room-by-id (management-pane-room-id pane))))
+      (assert room)
       (with-buffer-read-only buffer nil
         (erase-buffer buffer)
         (with-point ((point (buffer-point buffer) :left-inserting))
