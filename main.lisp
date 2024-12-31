@@ -229,18 +229,20 @@
          (directory (prompt-for-directory "Share directory: "
                                           :existing t
                                           :directory (buffer-directory)))
-         (room (api-client:create-room (api-client:client) :scope scope :name room-name))
-         (room-id (agent-api:room-id room))
+         (room-json (api-client:create-room (api-client:client) :scope scope :name room-name))
+         (room-id (agent-api:room-id room-json))
          (management-pane (management-pane:create-pane room-id))
          (room (register-room
                 :room-id room-id
-                :room-name (agent-api:room-name room)
+                :room-name (agent-api:room-name room-json)
                 :directory directory
                 :management-pane management-pane
                 :owner-p t)))
+    (management-pane:connecting management-pane)
+    (management-pane:redraw management-pane)
     (enter-room
      :room-id room-id
-     :websocket-url (agent-api:room-websocket-url room)
+     :websocket-url (agent-api:room-websocket-url room-json)
      :then (lambda ()
              (agent-api:share-directory :room-id room-id :path directory)
              (start-room room)))))
@@ -256,6 +258,8 @@
                       :room-name (agent-api:room-name room-json)
                       :management-pane management-pane
                       :owner-p nil)))
+          (management-pane:connecting management-pane)
+          (management-pane:redraw management-pane)
           (enter-room
            :room-id room-id
            :websocket-url (agent-api:room-websocket-url room-json)

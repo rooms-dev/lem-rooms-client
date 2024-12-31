@@ -87,11 +87,6 @@
 (defun create-pane (room-id)
   (close-rightside-window)
   (let ((pane (make-management-pane :room-id room-id)))
-    (connecting pane)
-    ;; BUG:
-    ;; register-roomをする前にredrawを呼び出すと、find-room-by-idでroomがnilになるのでエラーになる
-    ;; なので一旦ここはコメントアウトして、根本的なデータ構造の修正をする必要がある
-    ;; (redraw pane)
     (make-rightside-window (management-pane-buffer pane) :width 30)
     pane))
 
