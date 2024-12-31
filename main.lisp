@@ -238,21 +238,21 @@
          (directory (prompt-for-directory "Share directory: "
                                           :existing t
                                           :directory (buffer-directory)))
-         (room (api-client:create-room (api-client:client) :scope scope :name room-name)))
-    (let* ((room-id (agent-api:room-id room))
-           (management-pane (management-pane:create-pane room-id)))
-      (enter-room :room-id room-id
-                  :websocket-url (agent-api:room-websocket-url room)
-                  :then (lambda (client-id)
-                          (agent-api:share-directory :room-id room-id :path directory)
-                          (start-room
-                           (register-room
-                            :room-id room-id
-                            :room-name (agent-api:room-name room)
-                            :client-id client-id
-                            :directory directory
-                            :management-pane management-pane
-                            :owner-p t)))))))
+         (room (api-client:create-room (api-client:client) :scope scope :name room-name))
+         (room-id (agent-api:room-id room))
+         (management-pane (management-pane:create-pane room-id)))
+    (enter-room :room-id room-id
+                :websocket-url (agent-api:room-websocket-url room)
+                :then (lambda (client-id)
+                        (agent-api:share-directory :room-id room-id :path directory)
+                        (start-room
+                         (register-room
+                          :room-id room-id
+                          :room-name (agent-api:room-name room)
+                          :client-id client-id
+                          :directory directory
+                          :management-pane management-pane
+                          :owner-p t))))))
 
 (defun join-room (room-json)
   (let* ((room-id (agent-api:room-id room-json))
