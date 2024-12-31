@@ -10,6 +10,7 @@
            #:room-invitation
            #:room-owner-p
            #:register-room
+           #:set-room-directory
            #:find-room-by-id
            #:find-room-by-file))
 (in-package #:lem-rooms-client/room)
@@ -33,6 +34,10 @@
                          :owner-p owner-p)))
     (push room *rooms*)
     room))
+
+(defmethod set-room-directory ((room room) directory)
+  (setf (room-directory room)
+        (namestring (uiop:ensure-directory-pathname directory))))
 
 (defun find-room-by-id (room-id)
   (find room-id *rooms* :key #'room-id :test #'equal))

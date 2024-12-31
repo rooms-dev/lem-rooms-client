@@ -231,38 +231,39 @@
                                           :directory (buffer-directory)))
          (room (api-client:create-room (api-client:client) :scope scope :name room-name))
          (room-id (agent-api:room-id room))
-         (management-pane (management-pane:create-pane room-id)))
-    (enter-room :room-id room-id
-                :websocket-url (agent-api:room-websocket-url room)
-                :then (lambda ()
-                        (agent-api:share-directory :room-id room-id :path directory)
-                        (start-room
-                         (register-room
-                          :room-id room-id
-                          :room-name (agent-api:room-name room)
-                          :directory directory
-                          :management-pane management-pane
-                          :owner-p t))))))
+         (management-pane (management-pane:create-pane room-id))
+         (room (register-room
+                :room-id room-id
+                :room-name (agent-api:room-name room)
+                :directory directory
+                :management-pane management-pane
+                :owner-p t)))
+    (enter-room
+     :room-id room-id
+     :websocket-url (agent-api:room-websocket-url room)
+     :then (lambda ()
+             (agent-api:share-directory :room-id room-id :path directory)
+             (start-room room)))))
 
 (defun join-room (room-json)
   (let* ((room-id (agent-api:room-id room-json))
          (room (find-room-by-id room-id)))
     (if room
         (management-pane:open-management-pane room)
-        (let ((management-pane (management-pane:create-pane room-id)))
-          (enter-room :room-id room-id
-                      :websocket-url (agent-api:room-websocket-url room-json)
-                      :then (lambda ()
-                              (let ((directory (agent-api:sync-directory :room-id room-id)))
-                                (assert directory)
-                                (start-room
-                                 (register-room
-                                  :room-id room-id
-                                  :room-name (agent-api:room-name room-json)
-                                  :directory (namestring
-                                              (uiop:ensure-directory-pathname directory))
-                                  :management-pane management-pane
-                                  :owner-p nil)))))))))
+        (let* ((management-pane (management-pane:create-pane room-id))
+               (room (register-room
+                      :room-id room-id
+                      :room-name (agent-api:room-name room-json)
+                      :management-pane management-pane
+                      :owner-p nil)))
+          (enter-room
+           :room-id room-id
+           :websocket-url (agent-api:room-websocket-url room-json)
+           :then (lambda ()
+                   (let ((directory (agent-api:sync-directory :room-id room-id)))
+                     (assert directory)
+                     (set-room-directory room directory)
+                     (start-room room))))))))
 
 (define-command rooms-list () ()
   (init)
