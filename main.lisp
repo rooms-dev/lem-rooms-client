@@ -204,15 +204,13 @@
   (management-pane:open-management-pane room))
 
 (defun enter-room (&key room-id websocket-url then)
-  (let* ((response
-           (agent-api:enter-room
-            :room-id room-id
-            :user-name (api-client:user-name (api-client:client))
-            :websocket-url websocket-url
-            :access-token (api-client:client-access-token (api-client:client))))
-         (client-id (gethash "clientID" response)))
-    (connected-hook:add (lambda ()
-                          (funcall then client-id)))))
+  (agent-api:enter-room
+   :room-id room-id
+   :user-name (api-client:user-name (api-client:client))
+   :websocket-url websocket-url
+   :access-token (api-client:client-access-token (api-client:client)))
+  (connected-hook:add (lambda ()
+                        (funcall then))))
 
 (defun prompt-for-scope (prompt)
   (prompt-for-string prompt
@@ -236,13 +234,12 @@
          (management-pane (management-pane:create-pane room-id)))
     (enter-room :room-id room-id
                 :websocket-url (agent-api:room-websocket-url room)
-                :then (lambda (client-id)
+                :then (lambda ()
                         (agent-api:share-directory :room-id room-id :path directory)
                         (start-room
                          (register-room
                           :room-id room-id
                           :room-name (agent-api:room-name room)
-                          :client-id client-id
                           :directory directory
                           :management-pane management-pane
                           :owner-p t))))))
@@ -255,14 +252,13 @@
         (let ((management-pane (management-pane:create-pane room-id)))
           (enter-room :room-id room-id
                       :websocket-url (agent-api:room-websocket-url room-json)
-                      :then (lambda (client-id)
+                      :then (lambda ()
                               (let ((directory (agent-api:sync-directory :room-id room-id)))
                                 (assert directory)
                                 (start-room
                                  (register-room
                                   :room-id room-id
                                   :room-name (agent-api:room-name room-json)
-                                  :client-id client-id
                                   :directory (namestring
                                               (uiop:ensure-directory-pathname directory))
                                   :management-pane management-pane

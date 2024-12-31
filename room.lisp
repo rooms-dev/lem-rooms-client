@@ -19,17 +19,15 @@
 (defstruct room
   id
   name
-  client-id
   directory
   management-pane
   invitation
   owner-p
   users)
 
-(defun register-room (&key room-id room-name client-id directory management-pane owner-p)
+(defun register-room (&key room-id room-name directory management-pane owner-p)
   (let ((room (make-room :id room-id
                          :name room-name
-                         :client-id client-id
                          :directory directory
                          :management-pane management-pane
                          :owner-p owner-p)))
