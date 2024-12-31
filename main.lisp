@@ -153,12 +153,6 @@
                                    (return-from found (gethash "roomId" user)))
                                  users)))
                  (room (find-room-by-id room-id)))
-       (update-room-users room
-                          (map 'list
-                               #'convert-user
-                               (remove-if-not (lambda (user)
-                                                (equal room-id (gethash "roomId" user)))
-                                              users)))
        (update-cursors users)
        (management-pane:redraw (room-management-pane room) :users users)
        (redraw-display)))))

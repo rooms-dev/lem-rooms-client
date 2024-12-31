@@ -11,8 +11,7 @@
            #:room-owner-p
            #:register-room
            #:find-room-by-id
-           #:find-room-by-file
-           #:update-room-users))
+           #:find-room-by-file))
 (in-package #:lem-rooms-client/room)
 
 (defvar *rooms* '())
@@ -46,6 +45,3 @@
           (sub-path (namestring file)))
       (when (starts-with-subseq root-path sub-path)
         (return room)))))
-
-(defun update-room-users (room users)
-  (setf (room-users room) users))
