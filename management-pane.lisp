@@ -44,9 +44,7 @@
        comments))
 
 (defclass management-pane ()
-  ((room :initarg :room
-         :reader management-pane-room)
-   (room-id :initarg :room-id
+  ((room-id :initarg :room-id
             :reader management-pane-room-id)
    (buffer :initarg :buffer
            :reader management-pane-buffer)
@@ -65,11 +63,10 @@
   (when-let (window (frame-rightside-window (current-frame)))
     (buffer-value (window-buffer window) 'management-pane)))
 
-(defun make-management-pane (&key room room-id)
+(defun make-management-pane (&key room-id)
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
     (change-buffer-mode buffer 'rooms-mode)
     (let ((pane (make-instance 'management-pane
-                               :room room
                                :room-id room-id
                                :buffer buffer
                                :status-buffer (make-buffer "*Rooms status*"

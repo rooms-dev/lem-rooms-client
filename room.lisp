@@ -23,8 +23,7 @@
   directory
   management-pane
   invitation
-  owner-p
-  users)
+  owner-p)
 
 (defun register-room (&key room-id room-name directory management-pane owner-p)
   (let ((room (make-room :id room-id
