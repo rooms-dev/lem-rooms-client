@@ -170,12 +170,16 @@
   (send-event
    (lambda ()
      (when-let ((room (find-room-by-id (gethash "roomId" params))))
-       (dolist (file (gethash "added" params))
-         (let ((file (merge-pathnames file (room-directory room))))
-           (unless (uiop:file-exists-p file)
-             (alexandria:write-string-into-file ""
-                                                (ensure-directories-exist file)
-                                                :if-does-not-exist :create))))))))
+       ;; BUG:
+       ;; 後から入室した時、enter-roomを呼び出す前にfileChangedイベントが飛んでくるが、
+       ;; その時点ではまだset-room-directoryが呼ばれてないのでroom-directoryがnilを返しエラーになる
+       (when (room-directory room)
+         (dolist (file (gethash "added" params))
+           (let ((file (merge-pathnames file (room-directory room))))
+             (unless (uiop:file-exists-p file)
+               (alexandria:write-string-into-file ""
+                                                  (ensure-directories-exist file)
+                                                  :if-does-not-exist :create)))))))))
 
 (defun on-post-command ()
   (notify-focus (current-point)))
