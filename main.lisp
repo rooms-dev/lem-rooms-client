@@ -195,14 +195,38 @@
                                                   :if-does-not-exist :create)))))))))
 
 (defun on-post-command ()
+  (notify-focus (current-point)))
+
+(defun dump-points (buffer)
+  (loop :for point :in (lem/buffer/internal::buffer-points buffer)
+        :unless (member point
+                        (list (buffer-start-point buffer)
+                              (buffer-end-point buffer)))
+        :collect (list point (line-number-at-point point) (point-charpos point))))
+
+(defun replace-buffer-text (buffer text)
+  (let ((points-and-positions (dump-points buffer)))
+    (log:debug points-and-positions)
+    (delete-between-points (buffer-start-point buffer)
+                           (buffer-end-point buffer))
+    (insert-string (buffer-point buffer) text)
+    (loop :for (point line charpos) :in points-and-positions
+          :do (unless (move-to-line point line)
+                (buffer-end point))
+              (if (<= charpos (length (line-string point)))
+                  (line-offset point 0 charpos)
+                  (line-end point)))
+    (log:debug (dump-points buffer))))
+
+(defun check-buffer-sync ()
   (let ((buffer (current-buffer)))
     (when-let* ((file (buffer-filename buffer))
                 (room (find-room-by-file file))
                 (text (agent-api:get-text :room-id (room-id room)
                                           :path (buffer:path buffer))))
       (unless (equal text (buffer-text buffer))
-        (message "BUG: The text is not syncing with other clients!"))))
-  (notify-focus (current-point)))
+        (replace-buffer-text buffer text)
+        (message "Rooms BUG/FIX: The text synchronization had failed, so it was resynchronized")))))
 
 (defun on-find-file (buffer)
   (when-let (room (find-room-by-file (buffer-filename buffer)))
@@ -220,7 +244,8 @@
         (when (buffer-enable-undo-p buffer)
           (buffer-disable-undo buffer)
           (buffer-enable-undo buffer)))
-      (buffer:register-room-id-and-path buffer room-id path))))
+      (buffer:register-room-id-and-path buffer room-id path)
+      (start-timer (make-idle-timer 'check-buffer-sync) 2000))))
 
 (defun start-room (room)
   (management-pane:connected (room-management-pane room))
