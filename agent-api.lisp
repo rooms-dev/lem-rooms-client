@@ -27,7 +27,8 @@
            #:open-file
            #:sync-directory
            #:comment
-           #:get-comments))
+           #:get-comments
+           #:get-text))
 (in-package #:lem-rooms-client/agent-api)
 
 (defstruct user
@@ -136,3 +137,8 @@
 (defun get-comments (&key room-id)
   (agent:call "get-comments"
               (hash :room-id room-id)))
+
+(defun get-text (&key room-id path)
+  (agent:call "testing/get-text"
+              (hash :room-id room-id
+                    :path path)))

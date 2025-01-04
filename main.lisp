@@ -195,6 +195,13 @@
                                                   :if-does-not-exist :create)))))))))
 
 (defun on-post-command ()
+  (let ((buffer (current-buffer)))
+    (when-let* ((file (buffer-filename buffer))
+                (room (find-room-by-file file))
+                (text (agent-api:get-text :room-id (room-id room)
+                                          :path (buffer:path buffer))))
+      (unless (equal text (buffer-text buffer))
+        (message "BUG: The text is not syncing with other clients!"))))
   (notify-focus (current-point)))
 
 (defun on-find-file (buffer)
