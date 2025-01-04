@@ -245,7 +245,7 @@
           (buffer-disable-undo buffer)
           (buffer-enable-undo buffer)))
       (buffer:register-room-id-and-path buffer room-id path)
-      (start-timer (make-idle-timer 'check-buffer-sync) 2000))))
+      (start-timer (make-idle-timer 'check-buffer-sync) 2000 :repeat t))))
 
 (defun start-room (room)
   (management-pane:connected (room-management-pane room))
