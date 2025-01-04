@@ -49,7 +49,7 @@
          (stream (lem-lsp-mode/async-process-stream:make-input-stream
                   process
                   :logger (lambda (output)
-                            (log:info "agent output: ~A" output)))))
+                            (log:debug "agent output: ~A" output)))))
     (jsonrpc:expose jsonrpc "message" on-message)
     (jsonrpc:expose jsonrpc "connected" on-connected)
     (jsonrpc:expose jsonrpc "disconnected" on-disconnected)
@@ -72,12 +72,12 @@
 
 (defun notify (method params &key (agent *agent*))
   (check-type agent agent)
-  (log:info "Notify ~A ~A" method (pretty-json params))
+  (log:debug "Notify ~A ~A" method (pretty-json params))
   (jsonrpc:notify (agent-jsonrpc agent) method params))
 
 (defun call (method params &key (agent *agent*))
   (check-type agent agent)
-  (log:info "Call ~A ~A" method (pretty-json params))
+  (log:debug "Call ~A ~A" method (pretty-json params))
   (let ((response (jsonrpc:call (agent-jsonrpc agent) method params)))
-    (log:info "Call response ~A" (pretty-json response))
+    (log:debug "Call response ~A" (pretty-json response))
     response))
