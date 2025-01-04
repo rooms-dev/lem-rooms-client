@@ -101,10 +101,10 @@
                       :position position)))
 
 (defun edit (&key room-id path ops)
-  (agent:notify "edit"
-                (hash :room-id room-id
-                      :path path
-                      :ops ops)))
+  (agent:call "edit"
+              (hash :room-id room-id
+                    :path path
+                    :ops ops)))
 
 (defun enter-room (&key room-id user-name websocket-url access-token)
   (agent:call "enter-room"
