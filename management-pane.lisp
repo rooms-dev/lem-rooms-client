@@ -22,7 +22,8 @@
      :keymap *rooms-mode-keymap*)
   (setf (buffer-read-only-p (current-buffer)) t
         (not-switchable-buffer-p (current-buffer)) t
-        (variable-value 'lem/show-paren:enable :buffer (current-buffer)) nil))
+        (variable-value 'lem/show-paren:enable :buffer (current-buffer)) nil
+        (variable-value 'lem:highlight-line :buffer (current-buffer)) nil))
 
 (define-key *rooms-mode-keymap* "c" 'rooms-comment)
 
