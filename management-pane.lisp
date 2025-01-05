@@ -61,9 +61,8 @@
                       :type (member nil :connecting :connected :disconnected))))
 
 (defun current-management-pane ()
-  (or (when-let (window (frame-rightside-window (current-frame)))
-        (buffer-value (window-buffer window) 'management-pane))
-      (room:default-room)))
+  (when-let (window (frame-rightside-window (current-frame)))
+    (buffer-value (window-buffer window) 'management-pane)))
 
 (defun make-management-pane (&key room-id)
   (let ((buffer (make-buffer "*Rooms*" :enable-undo-p nil)))
@@ -99,8 +98,7 @@
     pane))
 
 (defun open-management-pane (room)
-  (redisplay-management-pane room)
-  (find-file (room:room-directory room)))
+  (redisplay-management-pane room))
 
 (defmethod connected ((pane management-pane))
   (set-management-pane-connection-status :connected pane))
@@ -192,16 +190,23 @@
             (insert-buffer point comment-buffer)))
         (buffer-start (buffer-point buffer))))))
 
+(defun get-current-room ()
+  (if-let (pane (current-management-pane))
+    (room:find-room-by-id (management-pane-room-id pane))
+    (room:default-room)))
+
 (define-command rooms-comment () ()
-  (with-save-cursor (current-buffer)
-    (when-let* ((pane (current-management-pane))
-                (room (room:find-room-by-id (management-pane-room-id pane))))
-      (with-current-buffer (management-pane-buffer (room:room-management-pane room))
-        (with-current-window (frame-rightside-window (current-frame))
-          (buffer-end (current-point))
-          (let ((text (prompt-for-string "Comment: "
-                                         :test-function (lambda (s) (plusp (length s)))
-                                         :gravity :cursor
-                                         :use-border nil)))
-            (agent-api:comment :room-id (room:room-id room)
-                               :text text)))))))
+  (flet ((comment (room)
+           (let ((text (prompt-for-string "Comment: "
+                                          :test-function (lambda (s) (plusp (length s)))
+                                          :gravity :center
+                                          :use-border t)))
+             (agent-api:comment :room-id (room:room-id room)
+                                :text text))))
+    (with-save-cursor (current-buffer)
+      (when-let ((room (get-current-room)))
+        (with-current-buffer (management-pane-buffer (room:room-management-pane room))
+          (if (frame-rightside-window (current-frame))
+              (with-current-window (frame-rightside-window (current-frame))
+                (comment room))
+              (comment room)))))))
