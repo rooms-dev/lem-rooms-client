@@ -62,8 +62,9 @@
                       :type (member nil :connecting :connected :disconnected))))
 
 (defun current-management-pane ()
-  (when-let (window (frame-rightside-window (current-frame)))
-    (buffer-value (window-buffer window) 'management-pane)))
+  (or (when-let (window (frame-rightside-window (current-frame)))
+        (buffer-value (window-buffer window) 'management-pane))
+      (room:default-room)))
 
 (defun make-management-pane (&key room-id)
   (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))

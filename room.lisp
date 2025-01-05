@@ -12,7 +12,8 @@
            #:register-room
            #:set-room-directory
            #:find-room-by-id
-           #:find-room-by-file))
+           #:find-room-by-file
+           #:default-room))
 (in-package #:lem-rooms-client/room)
 
 (defvar *rooms* '())
@@ -47,3 +48,6 @@
           (sub-path (namestring file)))
       (when (starts-with-subseq root-path sub-path)
         (return room)))))
+
+(defun default-room ()
+  (first *rooms*))

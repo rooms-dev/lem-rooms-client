@@ -372,7 +372,7 @@
          (close-rightside-window))
         (t
          ;; TODO: 複数のroomを開いている場合にどうするか
-         (management-pane:open-management-pane (first lem-rooms-client/room::*rooms*)))))
+         (management-pane:open-management-pane (default-room)))))
 
 (define-command rooms-sign-in () ()
   (setf (api-client:client-access-token (api-client:client)) nil) ;TODO: encapsulation
