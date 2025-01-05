@@ -21,7 +21,6 @@
     (:name "Rooms"
      :keymap *rooms-mode-keymap*)
   (setf (buffer-read-only-p (current-buffer)) t
-        (not-switchable-buffer-p (current-buffer)) t
         (variable-value 'lem/show-paren:enable :buffer (current-buffer)) nil
         (variable-value 'lem:highlight-line :buffer (current-buffer)) nil))
 
@@ -87,14 +86,16 @@
 (defun create-pane (room-id)
   (close-rightside-window)
   (let ((pane (make-management-pane :room-id room-id)))
-    (make-rightside-window (management-pane-buffer pane) :width 30)
+    (let ((window (make-rightside-window (management-pane-buffer pane) :width 30)))
+      (setf (window-buffer-switchable-p window) nil))
     pane))
 
 (defun redisplay-management-pane (room)
   (close-rightside-window)
   (let ((pane (room:room-management-pane room)))
     (redraw pane)
-    (make-rightside-window (management-pane-buffer pane) :width 30)
+    (let ((window (make-rightside-window (management-pane-buffer pane) :width 30)))
+      (setf (window-buffer-switchable-p window) nil))
     pane))
 
 (defun open-management-pane (room)
