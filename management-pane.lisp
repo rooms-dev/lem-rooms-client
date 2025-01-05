@@ -67,7 +67,7 @@
       (room:default-room)))
 
 (defun make-management-pane (&key room-id)
-  (let ((buffer (make-buffer "*Rooms right-side-pane*" :temporary t :enable-undo-p nil)))
+  (let ((buffer (make-buffer "*Rooms*" :enable-undo-p nil)))
     (change-buffer-mode buffer 'rooms-mode)
     (let ((pane (make-instance 'management-pane
                                :room-id room-id
