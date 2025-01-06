@@ -190,24 +190,3 @@
                 (insert-string point (format nil ": ~A~%" (comment-text comment)))))
             (insert-buffer point comment-buffer)))
         (buffer-start (buffer-point buffer))))))
-
-(defun get-current-room ()
-  (if-let (pane (current-management-pane))
-    (room:find-room-by-id (management-pane-room-id pane))
-    (room:default-room)))
-
-(define-command rooms-comment () ()
-  (flet ((comment (room)
-           (let ((text (prompt-for-string "Comment: "
-                                          :test-function (lambda (s) (plusp (length s)))
-                                          :gravity :center
-                                          :use-border t)))
-             (agent-api:comment :room-id (room:room-id room)
-                                :text text))))
-    (with-save-cursor (current-buffer)
-      (when-let ((room (get-current-room)))
-        (with-current-buffer (management-pane-buffer (room:room-management-pane room))
-          (if (frame-rightside-window (current-frame))
-              (with-current-window (frame-rightside-window (current-frame))
-                (comment room))
-              (comment room)))))))

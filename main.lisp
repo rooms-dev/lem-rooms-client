@@ -389,3 +389,24 @@
   (init-editor-hooks)
   (api-client:sign-in-backdoor (api-client:client) name)
   (message "Sign-in Successful"))
+
+(defun get-current-room ()
+  (if-let (pane (management-pane:current-management-pane))
+    (find-room-by-id (management-pane::management-pane-room-id pane))
+    (default-room)))
+
+(define-command rooms-comment () ()
+  (flet ((comment (room)
+           (let ((text (prompt-for-string "Comment: "
+                                          :test-function (lambda (s) (plusp (length s)))
+                                          :gravity :center
+                                          :use-border t)))
+             (agent-api:comment :room-id (room-id room)
+                                :text text))))
+    (with-save-cursor (current-buffer)
+      (when-let ((room (get-current-room)))
+        (with-current-buffer (management-pane::management-pane-buffer (room-management-pane room))
+          (if (frame-rightside-window (current-frame))
+              (with-current-window (frame-rightside-window (current-frame))
+                (comment room))
+              (comment room)))))))
