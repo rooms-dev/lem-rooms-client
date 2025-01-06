@@ -43,7 +43,7 @@
   (assert (not (agent-alive-p *agent*)))
   (let* ((process (run-process))
          (jsonrpc (jsonrpc:make-client))
-         (stream (lem-lsp-mode/async-process-stream:make-input-stream
+         (stream (rooms-client/async-process-stream:make-input-stream
                   process
                   :logger (lambda (output)
                             (log:debug "agent output: ~A" output)))))
@@ -56,7 +56,7 @@
     (jsonrpc:expose jsonrpc "fileChanged" on-file-changed)
     (jsonrpc/client:client-connect-using-class
      jsonrpc
-     'lem-lsp-mode/lem-stdio-transport:lem-stdio-transport
+     'rooms-client/stdio-transport:stdio-transport
      :process process
      :stream stream)
     (setf *agent*
