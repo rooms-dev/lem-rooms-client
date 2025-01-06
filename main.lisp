@@ -127,7 +127,7 @@
                   (let ((pane (room-management-pane (find-room-by-id room-id))))
                     (management-pane:connected pane)
                     (management-pane:redraw pane
-                                            :users users
+                                            :users (map 'list #'agent-api::convert-to-user-state users)
                                             :adding-comments (management-pane:convert-comments
                                                               comments))
                     (redraw-display))))))
@@ -143,27 +143,29 @@
 
 (defun update-cursors (users)
   (do-sequence (user users)
-    (let ((id (gethash "id" user))
-          (name (gethash "name" user))
-          (color (gethash "color" user))
-          (room-id (gethash "roomId" user))
-          (path (gethash "path" user))
-          (position (gethash "position" user))
-          (active-p (gethash "active" user))
-          (myself (gethash "myself" user)))
-      (when (and (not myself) active-p)
-        (when-let (buffer (buffer:find-buffer-by-room-and-path room-id path))
-          (when (eq buffer (window-buffer (current-window)))
-            (cursor:set-cursor buffer id name color (lsp-to-lem-position position))))))))
+    (declare (agent-api::user-state user))
+    (when (and (not (agent-api:user-state-myself user))
+               (agent-api:user-state-active user))
+      (when-let (buffer (buffer:find-buffer-by-room-and-path (agent-api:user-state-room-id user)
+                                                             (agent-api:user-state-path user)))
+        (when (eq buffer (window-buffer (current-window)))
+          (cursor:set-cursor buffer
+                             (agent-api:user-state-id user)
+                             (agent-api:user-state-name user)
+                             (agent-api:user-state-color user)
+                             (lsp-to-lem-position (agent-api:user-state-position user))))))))
 
 (defun on-users (params)
   (send-event
    (lambda ()
-     (when-let* ((users (remove-if #'null (gethash "users" params)))
+     (when-let* ((users (map 'list
+                             #'agent-api::convert-to-user-state
+                             (remove-if #'null (gethash "users" params))))
                  (room-id (block found
                             (map ()
                                  (lambda (user)
-                                   (return-from found (gethash "roomId" user)))
+                                   (return-from found
+                                     (agent-api:user-state-room-id user)))
                                  users)))
                  (room (find-room-by-id room-id)))
        (update-cursors users)

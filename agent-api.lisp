@@ -12,6 +12,14 @@
            #:room-users
            #:room-scope
            #:room-websocket-url
+           #:user-state-id
+           #:user-state-name
+           #:user-state-color
+           #:user-state-room-id
+           #:user-state-path
+           #:user-state-position
+           #:user-state-active
+           #:user-state-myself
            #:sign-in
            #:get-github-authorize-url
            #:authenticate
@@ -28,6 +36,7 @@
            #:sync-directory
            #:comment
            #:get-comments
+           #:get-users
            #:get-text))
 (in-package #:lem-rooms-client/agent-api)
 
@@ -56,6 +65,26 @@
              :users (mapcar #'convert-to-user (gethash "users" value))
              :scope (gethash "scope" value)
              :websocket-url (gethash "websocket_url" value)))
+
+(defstruct user-state
+  id
+  name
+  color
+  room-id
+  path
+  position
+  active
+  myself)
+
+(defun convert-to-user-state (value)
+  (make-user-state :id (gethash "id" value)
+                   :name (gethash "name" value)
+                   :color (gethash "color" value)
+                   :room-id (gethash "roomId" value)
+                   :path (gethash "path" value)
+                   :position (gethash "position" value)
+                   :active (gethash "active" value)
+                   :myself (gethash "myself" value)))
 
 (defun sign-in (&key name)
   (agent:call "rooms/sign-in" (hash :name name)))
@@ -137,6 +166,9 @@
 (defun get-comments (&key room-id)
   (agent:call "get-comments"
               (hash :room-id room-id)))
+
+(defun get-users (&key room-id)
+  (agent:call "get-users" (hash :room-id room-id)))
 
 (defun get-text (&key room-id path)
   (agent:call "testing/get-text"
