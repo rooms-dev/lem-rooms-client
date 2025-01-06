@@ -16,9 +16,6 @@
   jsonrpc
   process)
 
-(defun to-simple-character-array (string)
-  (make-array (length string) :initial-contents string :element-type 'character))
-
 (defun installed-nodejs-p ()
   (zerop
    (nth-value 2
