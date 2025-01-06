@@ -7,8 +7,7 @@
            #:call))
 (in-package #:rooms-client/agent)
 
-;; TODO: 新しいパスを考える
-(defparameter *agent-path* (asdf:system-relative-pathname :lem-rooms-client "sdk/agent.js"))
+(defparameter *agent-path* (asdf:system-relative-pathname :rooms-client "sdk/agent.js"))
 
 (defvar *agent* nil)
 
