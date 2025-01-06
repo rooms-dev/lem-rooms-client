@@ -1,11 +1,9 @@
+(asdf:load-asd (probe-file "rooms-client.asd"))
+
 (defsystem "lem-rooms-client"
-  :depends-on ()
+  :depends-on ("rooms-client")
   :serial t
-  :components ((:module "rooms-client"
-                :serial t
-                :components ((:file "agent")
-                             (:file "agent-api")))
-               (:file "utils")
+  :components ((:file "utils")
                (:file "defcommand")
                (:file "editor")
                (:file "cursor")
