@@ -7,7 +7,8 @@
   (:local-nicknames (#:api-client #:lem-rooms-client/api-client)
                     (#:room #:lem-rooms-client/room)
                     (#:agent-api #:lem-rooms-client/agent-api))
-  (:export #:convert-comments
+  (:export #:*rooms-pane-mode-keymap*
+           #:convert-comments
            #:create-pane
            #:open-management-pane
            #:current-management-pane
@@ -17,14 +18,12 @@
            #:redraw))
 (in-package :lem-rooms-client/management-pane)
 
-(define-major-mode rooms-mode nil
-    (:name "Rooms"
-     :keymap *rooms-mode-keymap*)
+(define-major-mode rooms-pane-mode nil
+    (:name "Rooms Pane"
+     :keymap *rooms-pane-mode-keymap*)
   (setf (buffer-read-only-p (current-buffer)) t
         (variable-value 'lem/show-paren:enable :buffer (current-buffer)) nil
         (variable-value 'lem:highlight-line :buffer (current-buffer)) nil))
-
-(define-key *rooms-mode-keymap* "c" 'rooms-comment)
 
 (define-attribute sub-header-attribute
   (t :bold t))
@@ -66,7 +65,7 @@
 
 (defun make-management-pane (&key room-id)
   (let ((buffer (make-buffer "*Rooms*" :enable-undo-p nil)))
-    (change-buffer-mode buffer 'rooms-mode)
+    (change-buffer-mode buffer 'rooms-pane-mode)
     (let ((pane (make-instance 'management-pane
                                :room-id room-id
                                :buffer buffer
@@ -82,10 +81,12 @@
       (setf (buffer-value buffer 'management-pane) pane)
       pane)))
 
+(defparameter +pane-default-width+ 40)
+
 (defun create-pane (room-id)
   (close-rightside-window)
   (let ((pane (make-management-pane :room-id room-id)))
-    (let ((window (make-rightside-window (management-pane-buffer pane) :width 30)))
+    (let ((window (make-rightside-window (management-pane-buffer pane) :width +pane-default-width+)))
       (setf (window-buffer-switchable-p window) nil))
     pane))
 
@@ -93,7 +94,7 @@
   (close-rightside-window)
   (let ((pane (room:room-management-pane room)))
     (redraw pane)
-    (let ((window (make-rightside-window (management-pane-buffer pane) :width 30)))
+    (let ((window (make-rightside-window (management-pane-buffer pane) :width +pane-default-width+)))
       (setf (window-buffer-switchable-p window) nil))
     pane))
 
@@ -128,6 +129,11 @@
                          :attribute (make-attribute
                                      :bold t
                                      :foreground (best-foreground-color (background-color))))
+          (insert-character point #\newline)
+          (insert-character point #\newline)
+          (insert-string point "Tips:")
+          (insert-character point #\newline)
+          (insert-string point "M-x rooms-command-palette (M-P)")
           (insert-character point #\newline)
           (insert-character point #\newline)
           (insert-string point "Name:" :attribute 'sub-header-attribute)

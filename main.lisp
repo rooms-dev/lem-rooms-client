@@ -17,9 +17,16 @@
                     (#:connected-hook #:lem-rooms-client/connected-hook)))
 (in-package #:lem-rooms-client)
 
-(defvar *inhibit-change-notification* nil)
+(define-minor-mode rooms-mode
+    (:name "Rooms"
+     :keymap *rooms-mode-keymap*
+     :global t))
+
+(define-key *rooms-mode-keymap* "M-P" 'rooms-command-palette)
+(define-key management-pane:*rooms-pane-mode-keymap* "c" 'rooms-comment)
 
 (defun init ()
+  (rooms-mode t)
   (run-agent-if-not-alive)
   (api-client:init (api-client:client))
   (init-editor-hooks))
@@ -57,6 +64,8 @@
   (loop :for function := (sb-concurrency:dequeue *edit-queue*)
         :while function
         :do (funcall function)))
+
+(defvar *inhibit-change-notification* nil)
 
 (defun on-before-change (point arg)
   (unless *inhibit-change-notification*
@@ -472,3 +481,7 @@
                                       :key #'lem/completion-mode:completion-item-label))
              :history-symbol 'rooms-command-palette)))
       (call-command (find-command command) arg))))
+
+(add-hook *after-init-hook*
+          (lambda ()
+            (rooms-mode t)))
