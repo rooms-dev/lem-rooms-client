@@ -6,7 +6,8 @@
         #:lem-rooms-client/editor
         #:lem-rooms-client/agent
         #:lem-rooms-client/room
-        #:lem-rooms-client/user)
+        #:lem-rooms-client/user
+        #:lem-rooms-client/defcommand)
   (:local-nicknames (#:cursor #:lem-rooms-client/cursor)
                     (#:agent #:lem-rooms-client/agent)
                     (#:agent-api #:lem-rooms-client/agent-api)
@@ -272,7 +273,8 @@
                      :test-function (lambda (s)
                                       (member s '("public" "private") :test #'equal))))
 
-(define-command rooms-create-room () ()
+(define-rooms-command rooms-create-room () ()
+  "Create a new room"
   (init)
   (let* ((room-name (prompt-for-string "Room name: "
                                        :test-function (lambda (string)
@@ -323,7 +325,8 @@
                         (set-room-directory room directory)
                         (start-room room)))))))))
 
-(define-command rooms-list () ()
+(define-rooms-command rooms-list () ()
+  "List of rooms"
   (init)
   (lem/multi-column-list:display
    (make-instance 'lem/multi-column-list:multi-column-list
@@ -351,7 +354,8 @@
   (format nil "An invitation code has already been issued.~@
                Do you want to invalidate the old invitation code and create a new one?"))
 
-(define-command rooms-publish-invitation () ()
+(define-rooms-command rooms-publish-invitation () ()
+  "Create an invitation to your room"
   (let ((room (find-room-by-file (buffer-directory (current-buffer)))))
     (unless (and room (room-owner-p room))
       (editor-error "Only the room owner can issue invitations"))
@@ -367,19 +371,22 @@
       (copy-to-clipboard code)
       (setf (room-invitation room) invitation))))
 
-(define-command rooms-join-by-invitation-code (invitation-code) ((:string "Invitation code: "))
+(define-rooms-command rooms-join-by-invitation-code (invitation-code) ((:string "Invitation code: "))
+  "Enter the room where you received the invitation"
   (init)
   (let ((room-json (api-client:join-by-invitation-code (api-client:client) invitation-code)))
     (join-room room-json)))
 
-(define-command rooms-toggle-pane () ()
+(define-rooms-command rooms-toggle-pane () ()
+  "Show or hide the pane on the right"
   (cond ((management-pane:current-management-pane)
          (close-rightside-window))
         (t
          ;; TODO: 複数のroomを開いている場合にどうするか
          (management-pane:open-management-pane (default-room)))))
 
-(define-command rooms-sign-in () ()
+(define-rooms-command rooms-sign-in () ()
+  "Sign in to Rooms"
   (setf (api-client:client-access-token (api-client:client)) nil) ;TODO: encapsulation
   (init)
   (message "Sign-in Successful"))
@@ -396,7 +403,8 @@
     ;; TODO: 複数のroomを開いている場合にどうするか
     (default-room)))
 
-(define-command rooms-comment () ()
+(define-rooms-command rooms-comment () ()
+  "Comment in this room"
   (flet ((comment (room)
            (let ((text (prompt-for-string "Comment: "
                                           :test-function (lambda (s) (plusp (length s)))
@@ -435,9 +443,32 @@
     (find-file (merge-pathnames path (room-directory room)))
     (move-to-position* (current-point) position)))
 
-(define-command rooms-jump-to-other-user-cursor () ()
+(define-rooms-command rooms-jump-to-other-user-cursor () ()
+  "Jump to the cursor position of other user"
   (when-let (room (get-current-room))
     (let ((user-state
             (choose-user (remove-if #'agent-api:user-state-myself
                                     (agent-api:get-users :room-id (room-id room))))))
       (jump-to user-state room))))
+
+(define-command rooms-command-palette (arg) (:universal-nil)
+  (let* ((commands (list-rooms-commands))
+         (completions (loop :for command :in commands
+                            :collect (lem/completion-mode:make-completion-item
+                                      :label (rooms-command-name command)
+                                      :detail (rooms-command-description command)))))
+    (let ((command
+            (prompt-for-string
+             "Rooms Command: "
+             :completion-function (lambda (s)
+                                    (completion-strings
+                                     s
+                                     completions
+                                     :key #'lem/completion-mode:completion-item-label))
+             :test-function (lambda (s)
+                              (member s
+                                      completions
+                                      :test #'equal
+                                      :key #'lem/completion-mode:completion-item-label))
+             :history-symbol 'rooms-command-palette)))
+      (call-command (find-command command) arg))))

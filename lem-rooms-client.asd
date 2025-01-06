@@ -2,6 +2,7 @@
   :depends-on ()
   :serial t
   :components ((:file "utils")
+               (:file "defcommand")
                (:file "editor")
                (:file "cursor")
                (:file "agent")
