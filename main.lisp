@@ -25,6 +25,11 @@
 (define-key *rooms-mode-keymap* "M-P" 'rooms-command-palette)
 (define-key management-pane:*rooms-pane-mode-keymap* "c" 'rooms-comment)
 
+(defun rooms-before-init ()
+  (rooms-mode t))
+
+(add-hook *before-init-hook* 'rooms-before-init)
+
 (defun init ()
   (rooms-mode t)
   (run-agent-if-not-alive)
@@ -481,7 +486,3 @@
                                       :key #'lem/completion-mode:completion-item-label))
              :history-symbol 'rooms-command-palette)))
       (call-command (find-command command) arg))))
-
-(add-hook *after-init-hook*
-          (lambda ()
-            (rooms-mode t)))
