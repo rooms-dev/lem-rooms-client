@@ -168,7 +168,7 @@
               (hash :room-id room-id)))
 
 (defun get-users (&key room-id)
-  (agent:call "get-users" (hash :room-id room-id)))
+  (map 'list #'convert-to-user-state (agent:call "get-users" (hash :room-id room-id))))
 
 (defun get-text (&key room-id path)
   (agent:call "testing/get-text"

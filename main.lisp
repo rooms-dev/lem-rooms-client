@@ -393,6 +393,7 @@
 (defun get-current-room ()
   (if-let (pane (management-pane:current-management-pane))
     (find-room-by-id (management-pane::management-pane-room-id pane))
+    ;; TODO: 複数のroomを開いている場合にどうするか
     (default-room)))
 
 (define-command rooms-comment () ()
@@ -404,9 +405,39 @@
              (agent-api:comment :room-id (room-id room)
                                 :text text))))
     (with-save-cursor (current-buffer)
-      (when-let ((room (get-current-room)))
+      (when-let (room (get-current-room))
         (with-current-buffer (management-pane::management-pane-buffer (room-management-pane room))
           (if (frame-rightside-window (current-frame))
               (with-current-window (frame-rightside-window (current-frame))
                 (comment room))
               (comment room)))))))
+
+(defun choose-user (user-states)
+  (if (length= 1 user-states)
+      (first user-states)
+      (prompt-for-string
+       "To which user?: "
+       :completion-function (lambda (s)
+                              (let ((result
+                                      (completion-strings s
+                                                          user-states
+                                                          :key #'agent-api:user-state-name)))
+                                (mapcar #'agent-api:user-state-name result)))
+       :test-function (lambda (s)
+                        (member s
+                                user-states
+                                :key #'agent-api:user-state-name
+                                :test #'equal)))))
+
+(defun jump-to (user-state room)
+  (let ((path (agent-api:user-state-path user-state))
+        (position (agent-api:user-state-position user-state)))
+    (find-file (merge-pathnames path (room-directory room)))
+    (move-to-position* (current-point) position)))
+
+(define-command rooms-jump-to-other-user-cursor () ()
+  (when-let (room (get-current-room))
+    (let ((user-state
+            (choose-user (remove-if #'agent-api:user-state-myself
+                                    (agent-api:get-users :room-id (room-id room))))))
+      (jump-to user-state room))))
