@@ -2,14 +2,14 @@
   (:use #:cl
         #:alexandria
         #:lem
+        #:rooms-client/agent
         #:lem-rooms-client/utils
         #:lem-rooms-client/editor
-        #:lem-rooms-client/agent
         #:lem-rooms-client/room
         #:lem-rooms-client/user
         #:lem-rooms-client/defcommand)
   (:local-nicknames (#:cursor #:lem-rooms-client/cursor)
-                    (#:agent #:lem-rooms-client/agent)
+                    (#:agent #:rooms-client/agent)
                     (#:agent-api #:lem-rooms-client/agent-api)
                     (#:buffer #:lem-rooms-client/buffer)
                     (#:management-pane #:lem-rooms-client/management-pane)

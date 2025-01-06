@@ -1,13 +1,13 @@
-(uiop:define-package #:lem-rooms-client/agent
-  (:use #:cl
-        #:lem-rooms-client/utils)
+(uiop:define-package #:rooms-client/agent
+  (:use #:cl)
   (:export #:agent-alive-p
            #:run-agent
            #:destroy-agent-if-alive
            #:notify
            #:call))
-(in-package #:lem-rooms-client/agent)
+(in-package #:rooms-client/agent)
 
+;; TODO: 新しいパスを考える
 (defparameter *agent-path* (asdf:system-relative-pathname :lem-rooms-client "sdk/agent.js"))
 
 (defvar *agent* nil)
@@ -78,3 +78,9 @@
   (let ((response (jsonrpc:call (agent-jsonrpc agent) method params)))
     (log:debug "Call response ~A" (pretty-json response))
     response))
+
+;;; utils
+
+(defun pretty-json (object)
+  (yason:with-output-to-string* (:indent t)
+    (yason:encode object)))

@@ -1,11 +1,13 @@
 (defsystem "lem-rooms-client"
   :depends-on ()
   :serial t
-  :components ((:file "utils")
+  :components ((:module "rooms-client"
+                :serial t
+                :components ((:file "agent")))
+               (:file "utils")
                (:file "defcommand")
                (:file "editor")
                (:file "cursor")
-               (:file "agent")
                (:File "agent-api")
                (:file "sign-in")
                (:file "user")

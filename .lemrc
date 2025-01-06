@@ -23,4 +23,4 @@
   (loop :for (key . value) :in (parse-env ".env")
         :do (setf (uiop:getenv key) value)))
 
-;(setf lem-rooms-client/agent::*agent-path* "../editor-agent/index.js")
+;(setf rooms-client/agent::*agent-path* "../editor-agent/index.js")

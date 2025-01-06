@@ -1,7 +1,7 @@
 (defpackage #:lem-rooms-client/agent-api
   (:use #:cl
         #:lem-rooms-client/utils)
-  (:local-nicknames (#:agent #:lem-rooms-client/agent))
+  (:local-nicknames (#:agent #:rooms-client/agent))
   (:shadow #:room)
   (:export #:user-id
            #:user-github-login
