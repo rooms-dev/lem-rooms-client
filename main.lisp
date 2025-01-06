@@ -28,7 +28,7 @@
 (defun rooms-before-init ()
   (rooms-mode t))
 
-(add-hook *before-init-hook* 'rooms-before-init)
+(add-hook *after-init-hook* 'rooms-before-init)
 
 (defun init ()
   (rooms-mode t)
