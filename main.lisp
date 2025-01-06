@@ -10,7 +10,7 @@
         #:lem-rooms-client/defcommand)
   (:local-nicknames (#:cursor #:lem-rooms-client/cursor)
                     (#:agent #:rooms-client/agent)
-                    (#:agent-api #:lem-rooms-client/agent-api)
+                    (#:agent-api #:rooms-client/agent-api)
                     (#:buffer #:lem-rooms-client/buffer)
                     (#:management-pane #:lem-rooms-client/management-pane)
                     (#:api-client #:lem-rooms-client/api-client)

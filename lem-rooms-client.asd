@@ -3,12 +3,12 @@
   :serial t
   :components ((:module "rooms-client"
                 :serial t
-                :components ((:file "agent")))
+                :components ((:file "agent")
+                             (:file "agent-api")))
                (:file "utils")
                (:file "defcommand")
                (:file "editor")
                (:file "cursor")
-               (:File "agent-api")
                (:file "sign-in")
                (:file "user")
                (:file "room")

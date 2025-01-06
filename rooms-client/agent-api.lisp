@@ -1,6 +1,5 @@
-(defpackage #:lem-rooms-client/agent-api
-  (:use #:cl
-        #:lem-rooms-client/utils)
+(defpackage #:rooms-client/agent-api
+  (:use #:cl)
   (:local-nicknames (#:agent #:rooms-client/agent))
   (:shadow #:room)
   (:export #:user-id
@@ -38,7 +37,7 @@
            #:get-comments
            #:get-users
            #:get-text))
-(in-package #:lem-rooms-client/agent-api)
+(in-package #:rooms-client/agent-api)
 
 (defstruct user
   id
@@ -174,3 +173,12 @@
   (agent:call "testing/get-text"
               (hash :room-id room-id
                     :path path)))
+
+;;; utils
+(defun hash (&rest plist)
+  (let ((hash (make-hash-table :test 'equal)))
+    (loop :for (key value) :on plist :by #'cddr
+          :do (setf (gethash (change-case:camel-case (string key))
+                             hash)
+                    value))
+    hash))

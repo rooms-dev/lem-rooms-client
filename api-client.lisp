@@ -1,7 +1,7 @@
 (uiop:define-package #:lem-rooms-client/api-client
   (:use #:cl)
   (:local-nicknames (#:sign-in #:lem-rooms-client/sign-in)
-                    (#:agent-api #:lem-rooms-client/agent-api))
+                    (#:agent-api #:rooms-client/agent-api))
   (:export #:client
            #:client-access-token
            #:client-connection-status

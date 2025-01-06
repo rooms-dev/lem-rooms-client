@@ -6,7 +6,7 @@
         #:lem-rooms-client/utils)
   (:local-nicknames (#:api-client #:lem-rooms-client/api-client)
                     (#:room #:lem-rooms-client/room)
-                    (#:agent-api #:lem-rooms-client/agent-api))
+                    (#:agent-api #:rooms-client/agent-api))
   (:export #:*rooms-pane-mode-keymap*
            #:convert-comments
            #:create-pane
