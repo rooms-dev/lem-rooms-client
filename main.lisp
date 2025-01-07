@@ -484,5 +484,6 @@
                                       completions
                                       :test #'equal
                                       :key #'lem/completion-mode:completion-item-label))
-             :history-symbol 'rooms-command-palette)))
+             :history-symbol 'rooms-command-palette
+             :syntax-table lem-lisp-syntax:*syntax-table*)))
       (call-command (find-command command) arg))))
