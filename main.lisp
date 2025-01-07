@@ -472,18 +472,22 @@
                                       :label (rooms-command-name command)
                                       :detail (rooms-command-description command)))))
     (let ((command
-            (prompt-for-string
-             "Rooms Command: "
-             :completion-function (lambda (s)
-                                    (completion-strings
-                                     s
-                                     completions
-                                     :key #'lem/completion-mode:completion-item-label))
-             :test-function (lambda (s)
-                              (member s
-                                      completions
-                                      :test #'equal
-                                      :key #'lem/completion-mode:completion-item-label))
-             :history-symbol 'rooms-command-palette
-             :syntax-table lem-lisp-syntax:*syntax-table*)))
+            (let ((lem-core::*default-prompt-gravity* :top-display)
+                  (lem/prompt-window::*fill-width* t)
+                  (*prompt-after-activate-hook* *prompt-after-activate-hook*))
+              (add-hook *prompt-after-activate-hook* 'lem/prompt-window::prompt-completion)
+              (prompt-for-string
+               "Rooms Command: "
+               :completion-function (lambda (s)
+                                      (completion-strings
+                                       s
+                                       completions
+                                       :key #'lem/completion-mode:completion-item-label))
+               :test-function (lambda (s)
+                                (member s
+                                        completions
+                                        :test #'equal
+                                        :key #'lem/completion-mode:completion-item-label))
+               :history-symbol 'rooms-command-palette
+               :syntax-table lem-lisp-syntax:*syntax-table*))))
       (call-command (find-command command) arg))))
