@@ -29,7 +29,7 @@
    (list "node"
          (namestring (probe-file *agent-path*)))))
 
-(defun agent-alive-p (&optional (agent *agent*))
+(defun agent-alive-p (agent)
   (and agent (async-process:process-alive-p (agent-process agent))))
 
 (defun run-agent (&key on-message
@@ -39,7 +39,6 @@
                        on-users
                        on-comments
                        on-file-changed)
-  (assert (not (agent-alive-p *agent*)))
   (let* ((process (run-process))
          (jsonrpc (jsonrpc:make-client))
          (stream (rooms-client/async-process-stream:make-input-stream
@@ -58,20 +57,19 @@
      'rooms-client/stdio-transport:stdio-transport
      :process process
      :stream stream)
-    (setf *agent*
-          (make-agent :jsonrpc jsonrpc
-                      :process process))))
+    (make-agent :jsonrpc jsonrpc
+                :process process)))
 
-(defun destroy-agent-if-alive (&key (agent *agent*))
+(defun destroy-agent-if-alive (agent)
   (when (agent-alive-p agent)
     (async-process:delete-process (agent-process agent))))
 
-(defun notify (method params &key (agent *agent*))
+(defun notify (agent method params)
   (check-type agent agent)
   (log:debug "Notify ~A ~A" method (pretty-json params))
   (jsonrpc:notify (agent-jsonrpc agent) method params))
 
-(defun call (method params &key (agent *agent*))
+(defun call (agent method params)
   (check-type agent agent)
   (log:debug "Call ~A ~A" method (pretty-json params))
   (let ((response (jsonrpc:call (agent-jsonrpc agent) method params)))

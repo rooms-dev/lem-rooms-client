@@ -32,30 +32,39 @@
 
 (defun init ()
   (rooms-mode t)
-  (run-agent-if-not-alive)
-  (api-client:init (api-client:client))
+  (let ((agent (run-agent-if-not-alive)))
+    (unless (api-client:client)
+      (api-client:init (api-client::new-client agent))))
   (init-editor-hooks))
 
+(defvar *agent* nil)
+
 (defun run-agent-if-not-alive ()
-  (unless (agent:agent-alive-p)
-    (agent:run-agent :on-message 'on-message
-                     :on-connected 'on-connected
-                     :on-disconnected 'on-disconnected
-                     :on-edit 'on-edit
-                     :on-users 'on-users
-                     :on-comments 'on-comments
-                     :on-file-changed 'on-file-changed)))
+  (unless (agent:agent-alive-p *agent*)
+    (setf *agent*
+          (agent:run-agent :on-message 'on-message
+                           :on-connected 'on-connected
+                           :on-disconnected 'on-disconnected
+                           :on-edit 'on-edit
+                           :on-users 'on-users
+                           :on-comments 'on-comments
+                           :on-file-changed 'on-file-changed)))
+  *agent*)
 
 (defun init-editor-hooks ()
   (add-hook *post-command-hook* 'on-post-command)
   (add-hook *find-file-hook* 'on-find-file)
-  (add-hook *exit-editor-hook* (lambda () (agent:destroy-agent-if-alive)))
+  (add-hook *exit-editor-hook*
+            (lambda ()
+              (agent:destroy-agent-if-alive
+               (api-client:client-agent (api-client:client)))))
   (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))
 
 (defun notify-focus (point)
   (let ((buffer (point-buffer point)))
     (when (buffer:room-id buffer)
-      (agent-api:focus :name (api-client:user-name (api-client:client))
+      (agent-api:focus (api-client:client-agent (api-client:client))
+                       :name (api-client:user-name (api-client:client))
                        :room-id (buffer:room-id buffer)
                        :path (buffer:path buffer)
                        :position (position-of point)))))
@@ -80,7 +89,8 @@
                 (position (position-of point)))
       (etypecase arg
         (string
-         (agent-api:edit :room-id room-id
+         (agent-api:edit (api-client:client-agent (api-client:client))
+                         :room-id room-id
                          :path (buffer:path buffer)
                          :ops (vector (hash :range (hash :start position
                                                          :end position)
@@ -89,7 +99,8 @@
          (with-point ((end point))
            (unless (character-offset end arg)
              (buffer-end end))
-           (agent-api:edit :room-id room-id
+           (agent-api:edit (api-client:client-agent (api-client:client))
+                           :room-id room-id
                            :path (buffer:path buffer)
                            :ops (vector (hash :range (hash :start position
                                                            :end (position-of end))
@@ -239,7 +250,8 @@
   (let ((buffer (current-buffer)))
     (when-let* ((file (buffer-filename buffer))
                 (room (find-room-by-file file))
-                (text (agent-api:get-text :room-id (room-id room)
+                (text (agent-api:get-text (api-client:client-agent (api-client:client))
+                                          :room-id (room-id room)
                                           :path (buffer:path buffer))))
       (unless (equal text (buffer-text buffer))
         (replace-buffer-text buffer text)
@@ -251,7 +263,8 @@
            (path (namestring
                   (enough-namestring (buffer-filename buffer)
                                      (room-directory room))))
-           (text (agent-api:open-file :room-id room-id
+           (text (agent-api:open-file (api-client:client-agent (api-client:client))
+                                      :room-id room-id
                                       :path path
                                       :text (buffer-text buffer))))
       (when (and text (string/= text (buffer-text buffer)))
@@ -272,6 +285,7 @@
 
 (defun enter-room (&key room-id websocket-url then)
   (agent-api:enter-room
+   (api-client:client-agent (api-client:client))
    :room-id room-id
    :user-name (api-client:user-name (api-client:client))
    :websocket-url websocket-url
@@ -312,7 +326,9 @@
      :room-id room-id
      :websocket-url (agent-api:room-websocket-url room-json)
      :then (lambda ()
-             (agent-api:share-directory :room-id room-id :path directory)
+             (agent-api:share-directory (api-client:client-agent (api-client:client))
+                                        :room-id room-id
+                                        :path directory)
              (start-room room)))))
 
 (defun join-room (room-json)
@@ -334,7 +350,9 @@
               :room-id room-id
               :websocket-url (agent-api:room-websocket-url room-json)
               :then (lambda ()
-                      (let ((directory (agent-api:sync-directory :room-id room-id)))
+                      (let ((directory (agent-api:sync-directory
+                                        (api-client:client-agent (api-client:client))
+                                        :room-id room-id)))
                         (assert directory)
                         (set-room-directory room directory)
                         (start-room room)))))))))
@@ -424,7 +442,8 @@
                                           :test-function (lambda (s) (plusp (length s)))
                                           :gravity :center
                                           :use-border t)))
-             (agent-api:comment :room-id (room-id room)
+             (agent-api:comment (api-client:client-agent (api-client:client))
+                                :room-id (room-id room)
                                 :text text))))
     (with-save-cursor (current-buffer)
       (when-let (room (get-current-room))
@@ -462,7 +481,8 @@
   (when-let (room (get-current-room))
     (let ((user-state
             (choose-user (remove-if #'agent-api:user-state-myself
-                                    (agent-api:get-users :room-id (room-id room))))))
+                                    (agent-api:get-users (api-client:client-agent (api-client:client))
+                                                         :room-id (room-id room))))))
       (jump-to user-state room))))
 
 (define-command rooms-command-palette (arg) (:universal-nil)
