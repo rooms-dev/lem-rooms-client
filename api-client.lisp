@@ -1,12 +1,10 @@
 (uiop:define-package #:lem-rooms-client/api-client
   (:use #:cl)
-  (:local-nicknames (#:sign-in #:lem-rooms-client/sign-in)
-                    (#:agent-api #:rooms-client/agent-api))
+  (:local-nicknames (#:agent-api #:rooms-client/agent-api))
   (:export #:client
-           #:new-client
            #:client-access-token
-           #:client-connection-status
            #:client-agent
+           #:client-user
            #:user-name
            #:sign-in-if-required
            #:sign-in
@@ -18,31 +16,15 @@
            #:join-by-invitation-code))
 (in-package #:lem-rooms-client/api-client)
 
-(defvar *client* nil)
-
-(defun client ()
-  *client*)
-
-(defun new-client (agent)
-  (assert (null *client*))
-  (setf *client* (make-instance 'client :agent agent)))
+(defgeneric sign-in (client))
 
 (defclass client ()
-  ((access-token :initform (lem:config :rooms.access-token)
+  ((access-token :initarg :access-token
                  :accessor client-access-token)
-   (user :initform (lem:config :room.user)
+   (user :initarg :user
          :accessor client-user)
    (agent :initarg :agent
           :reader client-agent)))
-
-(defmethod (setf client-access-token) :before (token (client client))
-  (setf (lem:config :rooms.access-token) token))
-
-(defmethod (setf client-user) :before (user (client client))
-  (assert (getf user :id))
-  (assert (getf user :github-login))
-  (assert (getf user :avatar-url))
-  (setf (lem:config :room.user) user))
 
 (defmethod user-name ((client client))
   (getf (client-user client) :github-login))
@@ -50,11 +32,6 @@
 (defmethod sign-in-if-required ((client client))
   (unless (client-access-token client)
     (sign-in client)))
-
-(defmethod sign-in ((client client))
-  (setf (client-access-token client)
-        (sign-in:sign-in (client-agent client)))
-  (values))
 
 (defmethod sign-in-backdoor ((client client) name)
   (let ((response (agent-api:sign-in (client-agent client) :name name)))
