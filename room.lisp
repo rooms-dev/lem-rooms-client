@@ -3,6 +3,7 @@
         #:alexandria)
   (:shadow #:room)
   (:export #:room-management-pane
+           #:room-room
            #:room-id
            #:room-name
            #:room-client-id
@@ -24,10 +25,12 @@
   directory
   management-pane
   invitation
-  owner-p)
+  owner-p
+  (room nil :type rooms-client/agent-api:room))
 
-(defun register-room (&key room-id room-name directory management-pane owner-p)
-  (let ((room (make-room :id room-id
+(defun register-room (&key room room-name directory management-pane owner-p)
+  (let ((room (make-room :id (rooms-client/agent-api:room-id room)
+                         :room room
                          :name room-name
                          :directory directory
                          :management-pane management-pane

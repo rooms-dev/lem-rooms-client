@@ -348,7 +348,7 @@
          (room-id (agent-api:room-id room-json))
          (management-pane (management-pane:create-pane room-id))
          (room (register-room
-                :room-id room-id
+                :room room-json
                 :room-name (agent-api:room-name room-json)
                 :directory directory
                 :management-pane management-pane
@@ -371,7 +371,7 @@
           (t
            (let* ((management-pane (management-pane:create-pane room-id))
                   (room (register-room
-                         :room-id room-id
+                         :room room-json
                          :room-name (agent-api:room-name room-json)
                          :management-pane management-pane
                          :owner-p nil)))
@@ -379,9 +379,8 @@
              (management-pane:redraw management-pane)
              (enter-room room-json
                          :then (lambda ()
-                                 (let ((directory (agent-api:sync-directory
-                                                   (api-client:client-agent (client))
-                                                   :room-id room-id)))
+                                 (let ((directory
+                                         (api-client:sync-directory (client) room-json)))
                                    (assert directory)
                                    (set-room-directory room directory)
                                    (start-room room)))))))))
@@ -470,9 +469,7 @@
                                           :test-function (lambda (s) (plusp (length s)))
                                           :gravity :center
                                           :use-border t)))
-             (agent-api:comment (api-client:client-agent (client))
-                                :room-id (room-id room)
-                                :text text))))
+             (api-client:comment (client) (room-room room) text))))
     (with-save-cursor (current-buffer)
       (when-let (room (get-current-room))
         (with-current-buffer (management-pane::management-pane-buffer (room-management-pane room))
