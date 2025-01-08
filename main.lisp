@@ -35,7 +35,8 @@
   (let* ((agent (run-agent-if-not-alive))
          (client (or (api-client:client)
                      (api-client::new-client agent))))
-    (api-client:init client))
+    (api-client:sign-in-if-required client)
+    (api-client:set-user-if-not-set client))
   (init-editor-hooks))
 
 (defvar *agent* nil)

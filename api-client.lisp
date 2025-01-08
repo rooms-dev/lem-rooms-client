@@ -8,10 +8,10 @@
            #:client-connection-status
            #:client-agent
            #:user-name
-           #:init
            #:sign-in-if-required
            #:sign-in
            #:sign-in-backdoor
+           #:set-user-if-not-set
            #:create-room
            #:get-rooms
            #:create-invitation
@@ -46,10 +46,6 @@
 
 (defmethod user-name ((client client))
   (getf (client-user client) :github-login))
-
-(defmethod init ((client client))
-  (sign-in-if-required client)
-  (set-user-if-not-set client))
 
 (defmethod sign-in-if-required ((client client))
   (unless (client-access-token client)
