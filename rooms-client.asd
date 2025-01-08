@@ -8,4 +8,5 @@
   :components ((:file "async-process-stream")
                (:file "stdio-transport")
                (:file "agent")
-               (:file "agent-api")))
+               (:file "agent-api")
+               (:file "api-client")))

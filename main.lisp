@@ -13,7 +13,7 @@
                     (#:agent-api #:rooms-client/agent-api)
                     (#:buffer #:lem-rooms-client/buffer)
                     (#:management-pane #:lem-rooms-client/management-pane)
-                    (#:api-client #:lem-rooms-client/api-client)
+                    (#:api-client #:rooms-client/api-client)
                     (#:connected-hook #:lem-rooms-client/connected-hook)
                     (#:sign-in #:lem-rooms-client/sign-in)))
 (in-package #:lem-rooms-client)

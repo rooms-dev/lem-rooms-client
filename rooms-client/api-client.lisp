@@ -1,4 +1,4 @@
-(uiop:define-package #:lem-rooms-client/api-client
+(uiop:define-package #:rooms-client/api-client
   (:use #:cl)
   (:local-nicknames (#:agent-api #:rooms-client/agent-api))
   (:export #:client
@@ -14,7 +14,7 @@
            #:get-rooms
            #:create-invitation
            #:join-by-invitation-code))
-(in-package #:lem-rooms-client/api-client)
+(in-package #:rooms-client/api-client)
 
 (defgeneric sign-in (client))
 

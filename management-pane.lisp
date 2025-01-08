@@ -4,7 +4,7 @@
         #:lem
         #:lem-rooms-client/editor
         #:lem-rooms-client/utils)
-  (:local-nicknames (#:api-client #:lem-rooms-client/api-client)
+  (:local-nicknames (#:api-client #:rooms-client/api-client)
                     (#:room #:lem-rooms-client/room)
                     (#:agent-api #:rooms-client/agent-api))
   (:export #:*rooms-pane-mode-keymap*
