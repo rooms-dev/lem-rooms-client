@@ -20,8 +20,10 @@
 
 (defclass client ()
   ((access-token :initarg :access-token
+                 :initform nil
                  :accessor client-access-token)
    (user :initarg :user
+         :initform nil
          :accessor client-user)
    (agent :initarg :agent
           :reader client-agent)))
