@@ -32,9 +32,10 @@
 
 (defun init ()
   (rooms-mode t)
-  (let ((agent (run-agent-if-not-alive)))
-    (unless (api-client:client)
-      (api-client:init (api-client::new-client agent))))
+  (let* ((agent (run-agent-if-not-alive))
+         (client (or (api-client:client)
+                     (api-client::new-client agent))))
+    (api-client:init client))
   (init-editor-hooks))
 
 (defvar *agent* nil)
