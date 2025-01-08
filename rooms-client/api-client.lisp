@@ -13,7 +13,8 @@
            #:create-room
            #:get-rooms
            #:create-invitation
-           #:join-by-invitation-code))
+           #:join-by-invitation-code
+           #:enter-room))
 (in-package #:rooms-client/api-client)
 
 (defgeneric sign-in (client))
@@ -68,3 +69,11 @@
   (agent-api:get-room-by-invitation (client-agent client)
                                     :invitation-code invitation-code
                                     :access-token (client-access-token client)))
+
+(defmethod enter-room ((client client) room)
+  (check-type room agent-api:room)
+  (agent-api:enter-room (client-agent client)
+                        :room-id (agent-api:room-id room)
+                        :user-name (user-name client)
+                        :websocket-url (agent-api:room-websocket-url room)
+                        :access-token (client-access-token client)))

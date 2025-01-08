@@ -5,6 +5,7 @@
   (:export #:user-id
            #:user-github-login
            #:user-avatar-url
+           #:room
            #:room-id
            #:room-name
            #:room-owner

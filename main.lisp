@@ -320,13 +320,9 @@
   (management-pane:open-management-pane room)
   (find-file (room-directory room)))
 
-(defun enter-room (&key room-id websocket-url then)
-  (agent-api:enter-room
-   (api-client:client-agent (client))
-   :room-id room-id
-   :user-name (api-client:user-name (client))
-   :websocket-url websocket-url
-   :access-token (api-client:client-access-token (client)))
+(defun enter-room (room &key then)
+  (check-type room agent-api:room)
+  (api-client:enter-room (client) room)
   (connected-hook:add (lambda ()
                         (funcall then))))
 
@@ -359,14 +355,12 @@
                 :owner-p t)))
     (management-pane:connecting management-pane)
     (management-pane:redraw management-pane)
-    (enter-room
-     :room-id room-id
-     :websocket-url (agent-api:room-websocket-url room-json)
-     :then (lambda ()
-             (agent-api:share-directory (api-client:client-agent (client))
-                                        :room-id room-id
-                                        :path directory)
-             (start-room room)))))
+    (enter-room room-json
+                :then (lambda ()
+                        (agent-api:share-directory (api-client:client-agent (client))
+                                                   :room-id room-id
+                                                   :path directory)
+                        (start-room room)))))
 
 (defun join-room (room-json)
   (let* ((room-id (agent-api:room-id room-json))
@@ -383,16 +377,14 @@
                          :owner-p nil)))
              (management-pane:connecting management-pane)
              (management-pane:redraw management-pane)
-             (enter-room
-              :room-id room-id
-              :websocket-url (agent-api:room-websocket-url room-json)
-              :then (lambda ()
-                      (let ((directory (agent-api:sync-directory
-                                        (api-client:client-agent (client))
-                                        :room-id room-id)))
-                        (assert directory)
-                        (set-room-directory room directory)
-                        (start-room room)))))))))
+             (enter-room room-json
+                         :then (lambda ()
+                                 (let ((directory (agent-api:sync-directory
+                                                   (api-client:client-agent (client))
+                                                   :room-id room-id)))
+                                   (assert directory)
+                                   (set-room-directory room directory)
+                                   (start-room room)))))))))
 
 (define-rooms-command rooms-list () ()
   "List of rooms"
