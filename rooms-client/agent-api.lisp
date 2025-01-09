@@ -2,7 +2,8 @@
   (:use #:cl)
   (:local-nicknames (#:agent #:rooms-client/agent))
   (:shadow #:room)
-  (:export #:user-id
+  (:export #:user
+           #:user-id
            #:user-github-login
            #:user-avatar-url
            #:room
@@ -12,6 +13,7 @@
            #:room-users
            #:room-scope
            #:room-websocket-url
+           #:user-state
            #:user-state-id
            #:user-state-name
            #:user-state-color
@@ -20,9 +22,32 @@
            #:user-state-position
            #:user-state-active
            #:user-state-myself
+           #:authenticated
            #:authenticated-access-token
+           #:invitation
            #:invitation-owner
            #:invitation-code
+           #:entered-room
+           #:entered-room-client-id
+           #:commented-user
+           #:commented-user-name
+           #:commented-user-color
+           #:comment
+           #:comment-user
+           #:comment-text
+           #:comment-date
+           #:commented-event
+           #:commented-event-added
+           #:commented-event-room-id
+           #:convert-to-user
+           #:convert-to-room
+           #:convert-to-user-state
+           #:convert-to-authenticated
+           #:convert-to-invitation
+           #:convert-to-entered-room
+           #:convert-to-commented-user
+           #:convert-to-comment
+           #:convert-to-commented-event
            #:sign-in
            #:get-github-authorize-url
            #:authenticate
@@ -96,7 +121,6 @@
   (client-id "clientID"))
 
 (define-json-structure (commented-user :converter convert-to-commented-user)
-  (client-id "clientId")
   (name "name")
   (color "color"))
 
@@ -104,6 +128,10 @@
   (user "user" :converter convert-to-commented-user)
   (text "text")
   (date "date"))
+
+(define-json-structure (commented-event :converter convert-to-commented-event)
+  (added "added" :converter (lambda (value) (map 'list #'convert-to-comment value)))
+  (room-id "roomId"))
 
 (defun sign-in (agent &key name)
   (convert-to-authenticated (agent:call agent "rooms/sign-in" (hash :name name))))

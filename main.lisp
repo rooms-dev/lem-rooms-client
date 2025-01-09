@@ -227,14 +227,15 @@
        (management-pane:redraw (room-management-pane room) :users users)
        (redraw-display)))))
 
-(defun on-comments (params)
+(defun on-comments (client event)
+  (declare (ignore client))
   (send-event
    (lambda ()
-     (when-let ((room (find-room-by-id (gethash "roomId" params))))
+     (when-let ((room (find-room-by-id (agent-api:commented-event-room-id event))))
        (management-pane:redraw
         (room-management-pane room)
         :adding-comments (management-pane:convert-comments
-                          (gethash "added" params)))))))
+                          (agent-api:commented-event-added event)))))))
 
 (defun on-file-changed (params)
   (send-event

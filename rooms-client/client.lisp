@@ -32,7 +32,8 @@
          :initform nil
          :accessor client-user)
    (agent :initarg :agent
-          :reader client-agent)))
+          :reader client-agent
+          :writer set-client-agent)))
 
 (defun launch (&key on-message
                     on-connected
@@ -44,17 +45,23 @@
                     access-token
                     user
                     (class-name 'client))
-  (let* ((agent (agent:run-agent :on-message on-message
-                                 :on-connected on-connected
-                                 :on-disconnected on-disconnected
-                                 :on-edit on-edit
-                                 :on-users on-users
-                                 :on-comments on-comments
-                                 :on-file-changed on-file-changed)))
-    (make-instance class-name
-                   :agent agent
-                   :access-token access-token
-                   :user user)))
+  (let* ((client
+           (make-instance class-name
+                          :access-token access-token
+                          :user user))
+         (agent (agent:run-agent
+                 :on-message on-message
+                 :on-connected on-connected
+                 :on-disconnected on-disconnected
+                 :on-edit on-edit
+                 :on-users on-users
+                 :on-comments (lambda (params)
+                                (funcall on-comments
+                                         client
+                                         (agent-api:convert-to-commented-event params)))
+                 :on-file-changed on-file-changed)))
+    (set-client-agent agent client)
+    client))
 
 (defmethod user-name ((client client))
   (getf (client-user client) :github-login))

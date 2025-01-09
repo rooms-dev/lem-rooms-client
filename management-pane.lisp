@@ -37,10 +37,10 @@
 (defun convert-comments (comments)
   (map 'list
        (lambda (comment)
-         (make-comment :user-name (gethash "name" (gethash "user" comment))
-                       :user-color (gethash "color" (gethash "user" comment))
-                       :text (gethash "text" comment)
-                       :date (local-time:parse-timestring (gethash "date" comment))))
+         (make-comment :user-name (agent-api:commented-user-name (agent-api:comment-user comment))
+                       :user-color (agent-api:commented-user-color (agent-api:comment-user comment))
+                       :text (agent-api:comment-text comment)
+                       :date (local-time:parse-timestring (agent-api:comment-date comment))))
        comments))
 
 (defclass management-pane ()
