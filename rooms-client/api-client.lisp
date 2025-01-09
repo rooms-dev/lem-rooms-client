@@ -1,10 +1,12 @@
 (uiop:define-package #:rooms-client/api-client
   (:use #:cl)
-  (:local-nicknames (#:agent-api #:rooms-client/agent-api))
+  (:local-nicknames (#:agent #:rooms-client/agent)
+                    (#:agent-api #:rooms-client/agent-api))
   (:export #:client
            #:client-access-token
            #:client-agent
            #:client-user
+           #:launch
            #:user-name
            #:sign-in-if-required
            #:sign-in
@@ -31,6 +33,28 @@
          :accessor client-user)
    (agent :initarg :agent
           :reader client-agent)))
+
+(defun launch (&key on-message
+                    on-connected
+                    on-disconnected
+                    on-edit
+                    on-users
+                    on-comments
+                    on-file-changed
+                    access-token
+                    user)
+  (let* ((agent (agent:run-agent :on-message on-message
+                                 :on-connected on-connected
+                                 :on-disconnected on-disconnected
+                                 :on-edit on-edit
+                                 :on-users on-users
+                                 :on-comments on-comments
+                                 :on-file-changed on-file-changed))
+         (client (make-instance 'client
+                                :agent agent
+                                :access-token access-token
+                                :user user)))
+    client))
 
 (defmethod user-name ((client client))
   (getf (client-user client) :github-login))

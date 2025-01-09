@@ -51,42 +51,25 @@
   (setf (api-client:client-access-token client)
         (sign-in:sign-in (api-client:client-agent client))))
 
-(defun new-client (&key agent access-token user)
-  (assert (null *client*))
-  (setf *client*
-        (make-instance 'client
-                       :agent agent
-                       :access-token access-token
-                       :user user)))
-
 (defun init (&key force-init)
   (when force-init
     (setf (lem:config :rooms.access-token) nil)
     (setf *client* nil))
-
   (rooms-mode t)
-  (let* ((agent (run-agent-if-not-alive))
-         (client (or (client)
-                     (new-client :agent agent
-                                 :access-token (lem:config :rooms.access-token)
-                                 :user (lem:config :room.user)))))
+  (let ((client (or *client*
+                    (api-client:launch :access-token (lem:config :rooms.access-token)
+                                       :user (lem:config :room.user)
+                                       :on-message 'on-message
+                                       :on-connected 'on-connected
+                                       :on-disconnected 'on-disconnected
+                                       :on-edit 'on-edit
+                                       :on-users 'on-users
+                                       :on-comments 'on-comments
+                                       :on-file-changed 'on-file-changed))))
+    (setf *client* client)
     (api-client:sign-in-if-required client)
     (api-client:set-user-if-not-set client))
   (init-editor-hooks))
-
-(defvar *agent* nil)
-
-(defun run-agent-if-not-alive ()
-  (unless (agent:agent-alive-p *agent*)
-    (setf *agent*
-          (agent:run-agent :on-message 'on-message
-                           :on-connected 'on-connected
-                           :on-disconnected 'on-disconnected
-                           :on-edit 'on-edit
-                           :on-users 'on-users
-                           :on-comments 'on-comments
-                           :on-file-changed 'on-file-changed)))
-  *agent*)
 
 (defun init-editor-hooks ()
   (add-hook *post-command-hook* 'on-post-command)
