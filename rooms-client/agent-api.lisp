@@ -1,4 +1,4 @@
-(defpackage #:rooms-client/agent-api
+(uiop:define-package #:rooms-client/agent-api
   (:use #:cl)
   (:local-nicknames (#:agent #:rooms-client/agent))
   (:shadow #:room)
@@ -40,51 +40,51 @@
            #:get-text))
 (in-package #:rooms-client/agent-api)
 
-(defstruct user
-  id
-  github-login
-  avatar-url)
+(defgeneric convert (name value))
+
+(defmacro define-json-structure (name &body slots)
+  (alexandria:with-unique-names (structure-name value)
+    `(progn
+       (defstruct ,name
+         ,@(loop :for (slot) :in slots
+                 :collect slot))
+       (defmethod convert ((,structure-name (eql ',name)) ,value)
+         (,(alexandria:symbolicate 'make- name)
+          ,@(loop :for (slot-name field-name) :in slots
+                  :append (list (alexandria:make-keyword slot-name)
+                                `(gethash ,field-name ,value))))))))
+
+(define-json-structure user
+  (id "id")
+  (github-login "name")
+  (avatar-url "avatar_url"))
 
 (defun convert-to-user (value)
-  (make-user :id (gethash "id" value)
-             :github-login (gethash "name" value)
-             :avatar-url (gethash "avatar_url" value)))
+  (convert 'user value))
 
-(defstruct room
-  id
-  name
-  owner
-  users
-  scope
-  websocket-url)
+(define-json-structure room
+  (id "id")
+  (name "name")
+  (owner "owner")
+  (users "users")
+  (scope "scope")
+  (websocket-url "websocket_url"))
 
 (defun convert-to-room (value)
-  (make-room :id (gethash "id" value)
-             :name (gethash "name" value)
-             :owner (convert-to-user (gethash "owner" value))
-             :users (mapcar #'convert-to-user (gethash "users" value))
-             :scope (gethash "scope" value)
-             :websocket-url (gethash "websocket_url" value)))
+  (convert 'room value))
 
-(defstruct user-state
-  id
-  name
-  color
-  room-id
-  path
-  position
-  active
-  myself)
+(define-json-structure user-state
+  (id "id")
+  (name "name")
+  (color "color")
+  (room-id "roomId")
+  (path "path")
+  (position "position")
+  (active "active")
+  (myself "myself"))
 
 (defun convert-to-user-state (value)
-  (make-user-state :id (gethash "id" value)
-                   :name (gethash "name" value)
-                   :color (gethash "color" value)
-                   :room-id (gethash "roomId" value)
-                   :path (gethash "path" value)
-                   :position (gethash "position" value)
-                   :active (gethash "active" value)
-                   :myself (gethash "myself" value)))
+  (convert 'user-state value))
 
 (defun sign-in (agent &key name)
   (agent:call agent "rooms/sign-in" (hash :name name)))
