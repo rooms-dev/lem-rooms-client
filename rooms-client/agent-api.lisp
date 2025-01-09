@@ -20,6 +20,9 @@
            #:user-state-position
            #:user-state-active
            #:user-state-myself
+           #:authenticated-access-token
+           #:invitation-owner
+           #:invitation-code
            #:sign-in
            #:get-github-authorize-url
            #:authenticate
@@ -50,9 +53,11 @@
                  :collect slot))
        (defmethod convert ((,structure-name (eql ',name)) ,value)
          (,(alexandria:symbolicate 'make- name)
-          ,@(loop :for (slot-name field-name) :in slots
+          ,@(loop :for (slot-name field-name &key slot-converter) :in slots
                   :append (list (alexandria:make-keyword slot-name)
-                                `(gethash ,field-name ,value)))))
+                                (if slot-converter
+                                    `(,slot-converter (gethash ,field-name ,value))
+                                    `(gethash ,field-name ,value))))))
        (defun ,converter (,value)
          (convert ',name ,value)))))
 
@@ -64,8 +69,9 @@
 (define-json-structure (room :converter convert-to-room)
   (id "id")
   (name "name")
-  (owner "owner")
-  (users "users")
+  (owner "owner" :converter convert-to-user)
+  (users "users" :converter (lambda (value)
+                              (map 'list #'convert-to-user value)))
   (scope "scope")
   (websocket-url "websocket_url"))
 
@@ -79,8 +85,28 @@
   (active "active")
   (myself "myself"))
 
+(define-json-structure (authenticated :converter convert-to-authenticated)
+  (access-token "access_token"))
+
+(define-json-structure (invitation :converter convert-to-invitation)
+  (owner "owner" :converter convert-to-user)
+  (code "code"))
+
+(define-json-structure (entered-room :converter convert-to-entered-room)
+  (client-id "clientID"))
+
+(define-json-structure (commented-user :converter convert-to-commented-user)
+  (client-id "clientId")
+  (name "name")
+  (color "color"))
+
+(define-json-structure (comment :converter convert-to-comment)
+  (user "user" :converter convert-to-commented-user)
+  (text "text")
+  (date "date"))
+
 (defun sign-in (agent &key name)
-  (agent:call agent "rooms/sign-in" (hash :name name)))
+  (convert-to-authenticated (agent:call agent "rooms/sign-in" (hash :name name))))
 
 (defun get-github-authorize-url (agent)
   (let ((response (agent:call agent "rooms/github-authorize-url" (hash))))
@@ -88,14 +114,14 @@
 
 (defun authenticate (agent code)
   (let ((response (agent:call agent "rooms/github-authenticate" (hash :code code))))
-    response))
+    (convert-to-authenticated response)))
 
 (defun get-user (agent &key access-token)
   (convert-to-user (agent:call agent "rooms/get-user" (hash :access-token access-token))))
 
 (defun get-rooms (agent &key access-token)
   (mapcar #'convert-to-room
-          (agent:call agent 
+          (agent:call agent
                       "rooms/get-rooms"
                       (hash :access-token access-token))))
 
@@ -108,10 +134,11 @@
                      :access-token access-token))))
 
 (defun create-invitation (agent &key room-id access-token)
-  (agent:call agent
-              "rooms/create-invitation"
-              (hash :room-id room-id
-                    :access-token access-token)))
+  (convert-to-invitation
+   (agent:call agent
+               "rooms/create-invitation"
+               (hash :room-id room-id
+                     :access-token access-token))))
 
 (defun get-room-by-invitation (agent &key invitation-code access-token)
   (convert-to-room
@@ -126,60 +153,72 @@
                 (hash :name name
                       :room-id room-id
                       :path path
-                      :position position)))
+                      :position position))
+  (values))
 
 (defun edit (agent &key room-id path ops)
   (agent:call agent
               "edit"
               (hash :room-id room-id
                     :path path
-                    :ops ops)))
+                    :ops ops))
+  (values))
 
 (defun enter-room (agent &key room-id user-name websocket-url access-token)
-  (agent:call agent
-              "enter-room"
-              (hash :room-id room-id
-                    :user-name user-name
-                    :websocket-url websocket-url
-                    :access-token access-token)))
+  (convert-to-entered-room
+   (agent:call agent
+               "enter-room"
+               (hash :room-id room-id
+                     :user-name user-name
+                     :websocket-url websocket-url
+                     :access-token access-token))))
 
 (defun share-directory (agent &key room-id path)
   (agent:notify agent
                 "share-directory"
                 (hash :room-id room-id
-                      :path path)))
+                      :path path))
+  (values))
 
 (defun open-file (agent &key room-id path text)
-  (agent:call agent
-              "open-file"
-              (hash :room-id room-id
-                    :path path
-                    :text text)))
+  (let ((text (agent:call agent
+                          "open-file"
+                          (hash :room-id room-id
+                                :path path
+                                :text text))))
+    text))
 
 (defun sync-directory (agent &key room-id)
-  (agent:call agent
-              "sync-directory"
-              (hash :room-id room-id)))
+  (let ((directory-name (agent:call agent
+                                    "sync-directory"
+                                    (hash :room-id room-id))))
+    directory-name))
 
 (defun comment (agent &key room-id text)
   (agent:notify agent
                 "comment"
                 (hash :room-id room-id
-                      :text text)))
+                      :text text))
+  (values))
 
 (defun get-comments (agent &key room-id)
-  (agent:call agent
-              "get-comments"
-              (hash :room-id room-id)))
+  (map 'list
+       #'convert-to-commented-user
+       (agent:call agent
+                   "get-comments"
+                   (hash :room-id room-id))))
 
 (defun get-users (agent &key room-id)
-  (map 'list #'convert-to-user-state (agent:call agent "get-users" (hash :room-id room-id))))
+  (map 'list
+       #'convert-to-user-state
+       (agent:call agent "get-users" (hash :room-id room-id))))
 
 (defun get-text (agent &key room-id path)
-  (agent:call agent
-              "testing/get-text"
-              (hash :room-id room-id
-                    :path path)))
+  (let ((text (agent:call agent
+                          "testing/get-text"
+                          (hash :room-id room-id
+                                :path path))))
+    text))
 
 ;;; utils
 (defun hash (&rest plist)

@@ -66,7 +66,7 @@
 (defmethod sign-in-backdoor ((client client) name)
   (let ((response (agent-api:sign-in (client-agent client) :name name)))
     (setf (client-access-token client)
-          (gethash "access_token" response))))
+          (agent-api:authenticated-access-token response))))
 
 (defmethod sign-in :after ((client client))
   (set-user-if-not-set client))

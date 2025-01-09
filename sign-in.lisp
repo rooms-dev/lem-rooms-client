@@ -23,13 +23,13 @@
   (let ((authorize-url (agent-api:get-github-authorize-url agent)))
     (open-authorize-url-with-browser-frontend authorize-url)
     (when-let ((code (prompt-for-string "code: ")))
-      (gethash "access_token" (agent-api:authenticate agent code)))))
+      (agent-api:authenticated-access-token (agent-api:authenticate agent code)))))
 
 (defun sign-in-default (agent)
   (let ((authorize-url (agent-api:get-github-authorize-url agent)))
     (ignore-errors (open-external-file authorize-url))
     (when-let ((code (prompt-for-string (format nil "~% ~A ~%~%code: " authorize-url))))
-      (gethash "access_token" (agent-api:authenticate agent code)))))
+      (agent-api:authenticated-access-token (agent-api:authenticate agent code)))))
 
 (defun sign-in (agent)
   (if (lem-rooms-client/editor:browser-frontend-p)
