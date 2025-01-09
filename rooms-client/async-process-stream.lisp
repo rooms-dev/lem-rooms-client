@@ -69,3 +69,26 @@
 
 (defmethod stream-clear-input ((stream input-stream))
   nil)
+
+(in-package :async-process)
+
+(defun pointer-to-string (process)
+  (let ((acc '()))
+    (loop
+      (let ((cstr (%process-receive-output (process-process process))))
+        (when (cffi:null-pointer-p cstr)
+          (return (map 'string #'code-char acc)))
+        (let ((bytes (loop :for i :from 0
+                           :for code := (cffi:mem-aref cstr :unsigned-char i)
+                           :until (zerop code)
+                           :collect code)))
+          (setf acc (append acc bytes)))
+        (let ((octets (make-array (length acc)
+                                  :element-type '(unsigned-byte 8)
+                                  :initial-contents acc)))
+          (handler-case (return (babel:octets-to-string octets))
+            (error ())))))))
+
+(defun process-receive-output (process)
+  (let ((cffi:*default-foreign-encoding* (process-encode process)))
+    (pointer-to-string process)))
