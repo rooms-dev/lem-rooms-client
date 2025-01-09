@@ -450,12 +450,6 @@
   (init :force-init t)
   (message "Sign-in Successful"))
 
-(define-command rooms-backdoor (name) ((:string "Name: "))
-  (run-agent-if-not-alive)
-  (init-editor-hooks)
-  (api-client:sign-in-backdoor (client) name)
-  (message "Sign-in Successful"))
-
 (defun get-current-room ()
   (if-let (pane (management-pane:current-management-pane))
     (find-room-by-id (management-pane::management-pane-room-id pane))
