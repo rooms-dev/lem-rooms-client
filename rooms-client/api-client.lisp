@@ -12,6 +12,7 @@
            #:sign-in
            #:sign-in-backdoor
            #:set-user-if-not-set
+           #:sign-out
            #:create-room
            #:get-rooms
            #:create-invitation
@@ -76,6 +77,10 @@
             (list :id (agent-api:user-id user)
                   :github-login (agent-api:user-github-login user)
                   :avatar-url (agent-api:user-avatar-url user))))))
+
+(defmethod sign-out ((client client))
+  (setf (client-user client) nil
+        (client-access-token client) nil))
 
 (defmethod create-room ((client client) &key name scope)
   (agent-api:create-room (client-agent client)

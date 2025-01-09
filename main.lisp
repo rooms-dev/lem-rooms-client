@@ -36,6 +36,9 @@
 (defun client ()
   *client*)
 
+(defun set-client (client)
+  (setf *client* client))
+
 (defclass client (api-client:client) ())
 
 (defmethod (setf api-client:client-access-token) :before (token (client client))
@@ -47,16 +50,8 @@
   (assert (getf user :avatar-url))
   (setf (lem:config :room.user) user))
 
-(defmethod api-client:sign-in ((client client))
-  (setf (api-client:client-access-token client)
-        (sign-in:sign-in (api-client:client-agent client))))
-
-(defun init (&key force-init)
-  (when force-init
-    (setf (lem:config :rooms.access-token) nil)
-    (setf *client* nil))
-  (rooms-mode t)
-  (let ((client (or *client*
+(defun launch-client ()
+  (let ((client (or (client)
                     (api-client:launch :access-token (lem:config :rooms.access-token)
                                        :user (lem:config :room.user)
                                        :on-message 'on-message
@@ -66,9 +61,23 @@
                                        :on-users 'on-users
                                        :on-comments 'on-comments
                                        :on-file-changed 'on-file-changed))))
-    (setf *client* client)
+    (set-client client)
     (api-client:sign-in-if-required client)
-    (api-client:set-user-if-not-set client))
+    (api-client:set-user-if-not-set client)
+    client))
+
+(defun sign-out (client)
+  (setf (lem:config :rooms.access-token) nil)
+  (when client
+    (api-client:sign-out client)))
+
+(defmethod api-client:sign-in ((client client))
+  (setf (api-client:client-access-token client)
+        (sign-in:sign-in (api-client:client-agent client))))
+
+(defun init ()
+  (rooms-mode t)
+  (launch-client)
   (init-editor-hooks))
 
 (defun init-editor-hooks ()
@@ -430,7 +439,8 @@
 
 (define-rooms-command rooms-sign-in () ()
   "Sign in to Rooms"
-  (init :force-init t)
+  (sign-out (client))
+  (init)
   (message "Sign-in Successful"))
 
 (defun get-current-room ()
