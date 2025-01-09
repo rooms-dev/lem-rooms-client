@@ -50,12 +50,11 @@
                                  :on-edit on-edit
                                  :on-users on-users
                                  :on-comments on-comments
-                                 :on-file-changed on-file-changed))
-         (client (make-instance 'client
-                                :agent agent
-                                :access-token access-token
-                                :user user)))
-    client))
+                                 :on-file-changed on-file-changed)))
+    (make-instance 'client
+                   :agent agent
+                   :access-token access-token
+                   :user user)))
 
 (defmethod user-name ((client client))
   (getf (client-user client) :github-login))
