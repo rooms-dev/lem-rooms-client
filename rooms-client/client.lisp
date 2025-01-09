@@ -42,7 +42,8 @@
                     on-comments
                     on-file-changed
                     access-token
-                    user)
+                    user
+                    (class-name 'client))
   (let* ((agent (agent:run-agent :on-message on-message
                                  :on-connected on-connected
                                  :on-disconnected on-disconnected
@@ -50,7 +51,7 @@
                                  :on-users on-users
                                  :on-comments on-comments
                                  :on-file-changed on-file-changed)))
-    (make-instance 'client
+    (make-instance class-name
                    :agent agent
                    :access-token access-token
                    :user user)))

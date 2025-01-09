@@ -52,7 +52,8 @@
 
 (defun launch-client ()
   (let ((client (or (client)
-                    (client:launch :access-token (lem:config :rooms.access-token)
+                    (client:launch :class-name 'client
+                                   :access-token (lem:config :rooms.access-token)
                                    :user (lem:config :room.user)
                                    :on-message 'on-message
                                    :on-connected 'on-connected
