@@ -1,4 +1,4 @@
-(uiop:define-package #:rooms-client/api-client
+(uiop:define-package #:rooms-client/client
   (:use #:cl)
   (:local-nicknames (#:agent #:rooms-client/agent)
                     (#:agent-api #:rooms-client/agent-api))
@@ -21,7 +21,7 @@
            #:sync-directory
            #:get-comments
            #:comment))
-(in-package #:rooms-client/api-client)
+(in-package #:rooms-client/client)
 
 (defgeneric sign-in (client))
 

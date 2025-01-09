@@ -13,7 +13,7 @@
                     (#:agent-api #:rooms-client/agent-api)
                     (#:buffer #:lem-rooms-client/buffer)
                     (#:management-pane #:lem-rooms-client/management-pane)
-                    (#:api-client #:rooms-client/api-client)
+                    (#:client #:rooms-client/client)
                     (#:connected-hook #:lem-rooms-client/connected-hook)
                     (#:sign-in #:lem-rooms-client/sign-in)))
 (in-package #:lem-rooms-client)
@@ -39,12 +39,12 @@
 (defun set-client (client)
   (setf *client* client))
 
-(defclass client (api-client:client) ())
+(defclass client (client:client) ())
 
-(defmethod (setf api-client:client-access-token) :before (token (client client))
+(defmethod (setf client:client-access-token) :before (token (client client))
   (setf (lem:config :rooms.access-token) token))
 
-(defmethod (setf api-client:client-user) :before (user (client client))
+(defmethod (setf client:client-user) :before (user (client client))
   (assert (getf user :id))
   (assert (getf user :github-login))
   (assert (getf user :avatar-url))
@@ -52,7 +52,7 @@
 
 (defun launch-client ()
   (let ((client (or (client)
-                    (api-client:launch :access-token (lem:config :rooms.access-token)
+                    (client:launch :access-token (lem:config :rooms.access-token)
                                        :user (lem:config :room.user)
                                        :on-message 'on-message
                                        :on-connected 'on-connected
@@ -62,18 +62,18 @@
                                        :on-comments 'on-comments
                                        :on-file-changed 'on-file-changed))))
     (set-client client)
-    (api-client:sign-in-if-required client)
-    (api-client:set-user-if-not-set client)
+    (client:sign-in-if-required client)
+    (client:set-user-if-not-set client)
     client))
 
 (defun sign-out (client)
   (setf (lem:config :rooms.access-token) nil)
   (when client
-    (api-client:sign-out client)))
+    (client:sign-out client)))
 
-(defmethod api-client:sign-in ((client client))
-  (setf (api-client:client-access-token client)
-        (sign-in:sign-in (api-client:client-agent client))))
+(defmethod client:sign-in ((client client))
+  (setf (client:client-access-token client)
+        (sign-in:sign-in (client:client-agent client))))
 
 (defun init ()
   (rooms-mode t)
@@ -86,14 +86,14 @@
   (add-hook *exit-editor-hook*
             (lambda ()
               (agent:destroy-agent-if-alive
-               (api-client:client-agent (client)))))
+               (client:client-agent (client)))))
   (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))
 
 (defun notify-focus (point)
   (let ((buffer (point-buffer point)))
     (when (buffer:room-id buffer)
-      (agent-api:focus (api-client:client-agent (client))
-                       :name (api-client:user-name (client))
+      (agent-api:focus (client:client-agent (client))
+                       :name (client:user-name (client))
                        :room-id (buffer:room-id buffer)
                        :path (buffer:path buffer)
                        :position (position-of point)))))
@@ -118,7 +118,7 @@
                 (position (position-of point)))
       (etypecase arg
         (string
-         (agent-api:edit (api-client:client-agent (client))
+         (agent-api:edit (client:client-agent (client))
                          :room-id room-id
                          :path (buffer:path buffer)
                          :ops (vector (hash :range (hash :start position
@@ -128,7 +128,7 @@
          (with-point ((end point))
            (unless (character-offset end arg)
              (buffer-end end))
-           (agent-api:edit (api-client:client-agent (client))
+           (agent-api:edit (client:client-agent (client))
                            :room-id room-id
                            :path (buffer:path buffer)
                            :ops (vector (hash :range (hash :start position
@@ -279,7 +279,7 @@
   (let ((buffer (current-buffer)))
     (when-let* ((file (buffer-filename buffer))
                 (room (find-room-by-file file))
-                (text (agent-api:get-text (api-client:client-agent (client))
+                (text (agent-api:get-text (client:client-agent (client))
                                           :room-id (room-id room)
                                           :path (buffer:path buffer))))
       (unless (equal text (buffer-text buffer))
@@ -292,7 +292,7 @@
            (path (namestring
                   (enough-namestring (buffer-filename buffer)
                                      (room-directory room))))
-           (text (agent-api:open-file (api-client:client-agent (client))
+           (text (agent-api:open-file (client:client-agent (client))
                                       :room-id room-id
                                       :path path
                                       :text (buffer-text buffer))))
@@ -314,7 +314,7 @@
 
 (defun enter-room (room &key then)
   (check-type room agent-api:room)
-  (api-client:enter-room (client) room)
+  (client:enter-room (client) room)
   (connected-hook:add (lambda ()
                         (funcall then))))
 
@@ -336,7 +336,7 @@
          (directory (prompt-for-directory "Share directory: "
                                           :existing t
                                           :directory (buffer-directory)))
-         (room-json (api-client:create-room (client) :scope scope :name room-name))
+         (room-json (client:create-room (client) :scope scope :name room-name))
          (room-id (agent-api:room-id room-json))
          (management-pane (management-pane:create-pane room-id))
          (room (register-room
@@ -349,7 +349,7 @@
     (management-pane:redraw management-pane)
     (enter-room room-json
                 :then (lambda ()
-                        (agent-api:share-directory (api-client:client-agent (client))
+                        (agent-api:share-directory (client:client-agent (client))
                                                    :room-id room-id
                                                    :path directory)
                         (start-room room)))))
@@ -372,7 +372,7 @@
              (enter-room room-json
                          :then (lambda ()
                                  (let ((directory
-                                         (api-client:sync-directory (client) room-json)))
+                                         (client:sync-directory (client) room-json)))
                                    (assert directory)
                                    (set-room-directory room directory)
                                    (start-room room)))))))))
@@ -395,7 +395,7 @@
                                                    "~{~A ~}"
                                                    (mapcar #'agent-api:user-github-login
                                                            (agent-api:room-users room)))))
-                  :items (api-client:get-rooms (client))
+                  :items (client:get-rooms (client))
                   :select-callback (lambda (component room)
                                      (start-timer (make-idle-timer (lambda ()
                                                                      (join-room room)))
@@ -413,7 +413,7 @@
       (editor-error "Only the room owner can issue invitations"))
     (let* ((invitation (if (or (null (room-invitation room))
                                (prompt-for-y-or-n-p *recreation-invitation-code-message*))
-                           (api-client:create-invitation (client)
+                           (client:create-invitation (client)
                                                          (room-id room))
                            (room-invitation room)))
            (code (gethash "code" invitation)))
@@ -426,7 +426,7 @@
 (define-rooms-command rooms-join-by-invitation-code (invitation-code) ((:string "Invitation code: "))
   "Enter the room where you received the invitation"
   (init)
-  (let ((room-json (api-client:join-by-invitation-code (client) invitation-code)))
+  (let ((room-json (client:join-by-invitation-code (client) invitation-code)))
     (join-room room-json)))
 
 (define-rooms-command rooms-toggle-pane () ()
@@ -456,7 +456,7 @@
                                           :test-function (lambda (s) (plusp (length s)))
                                           :gravity :center
                                           :use-border t)))
-             (api-client:comment (client) (room-room room) text))))
+             (client:comment (client) (room-room room) text))))
     (with-save-cursor (current-buffer)
       (when-let (room (get-current-room))
         (with-current-buffer (management-pane::management-pane-buffer (room-management-pane room))
@@ -493,7 +493,7 @@
   (when-let (room (get-current-room))
     (let ((user-state
             (choose-user (remove-if #'agent-api:user-state-myself
-                                    (agent-api:get-users (api-client:client-agent (client))
+                                    (agent-api:get-users (client:client-agent (client))
                                                          :room-id (room-id room))))))
       (jump-to user-state room))))
 

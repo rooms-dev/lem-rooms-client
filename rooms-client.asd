@@ -9,4 +9,4 @@
                (:file "stdio-transport")
                (:file "agent")
                (:file "agent-api")
-               (:file "api-client")))
+               (:file "client")))
