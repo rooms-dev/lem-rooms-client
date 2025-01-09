@@ -63,7 +63,6 @@
                                    :on-file-changed 'on-file-changed))))
     (set-client client)
     (client:sign-in-if-required client)
-    (client:set-user-if-not-set client)
     client))
 
 (defun sign-out (client)

@@ -11,7 +11,6 @@
            #:sign-in-if-required
            #:sign-in
            #:sign-in-backdoor
-           #:set-user-if-not-set
            #:sign-out
            #:create-room
            #:get-rooms
@@ -67,6 +66,12 @@
   (let ((response (agent-api:sign-in (client-agent client) :name name)))
     (setf (client-access-token client)
           (gethash "access_token" response))))
+
+(defmethod sign-in :after ((client client))
+  (set-user-if-not-set client))
+
+(defmethod sign-in-backdoor :after ((client client) name)
+  (set-user-if-not-set client))
 
 (defmethod set-user-if-not-set ((client client))
   (unless (client-user client)
