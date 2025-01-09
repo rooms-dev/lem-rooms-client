@@ -42,7 +42,7 @@
 
 (defgeneric convert (name value))
 
-(defmacro define-json-structure (name &body slots)
+(defmacro define-json-structure ((name &key converter) &body slots)
   (alexandria:with-unique-names (structure-name value)
     `(progn
        (defstruct ,name
@@ -52,17 +52,16 @@
          (,(alexandria:symbolicate 'make- name)
           ,@(loop :for (slot-name field-name) :in slots
                   :append (list (alexandria:make-keyword slot-name)
-                                `(gethash ,field-name ,value))))))))
+                                `(gethash ,field-name ,value)))))
+       (defun ,converter (,value)
+         (convert ',name ,value)))))
 
-(define-json-structure user
+(define-json-structure (user :converter convert-to-user)
   (id "id")
   (github-login "name")
   (avatar-url "avatar_url"))
 
-(defun convert-to-user (value)
-  (convert 'user value))
-
-(define-json-structure room
+(define-json-structure (room :converter convert-to-room)
   (id "id")
   (name "name")
   (owner "owner")
@@ -70,10 +69,7 @@
   (scope "scope")
   (websocket-url "websocket_url"))
 
-(defun convert-to-room (value)
-  (convert 'room value))
-
-(define-json-structure user-state
+(define-json-structure (user-state :converter convert-to-user-state)
   (id "id")
   (name "name")
   (color "color")
@@ -82,9 +78,6 @@
   (position "position")
   (active "active")
   (myself "myself"))
-
-(defun convert-to-user-state (value)
-  (convert 'user-state value))
 
 (defun sign-in (agent &key name)
   (agent:call agent "rooms/sign-in" (hash :name name)))
