@@ -53,14 +53,14 @@
 (defun launch-client ()
   (let ((client (or (client)
                     (client:launch :access-token (lem:config :rooms.access-token)
-                                       :user (lem:config :room.user)
-                                       :on-message 'on-message
-                                       :on-connected 'on-connected
-                                       :on-disconnected 'on-disconnected
-                                       :on-edit 'on-edit
-                                       :on-users 'on-users
-                                       :on-comments 'on-comments
-                                       :on-file-changed 'on-file-changed))))
+                                   :user (lem:config :room.user)
+                                   :on-message 'on-message
+                                   :on-connected 'on-connected
+                                   :on-disconnected 'on-disconnected
+                                   :on-edit 'on-edit
+                                   :on-users 'on-users
+                                   :on-comments 'on-comments
+                                   :on-file-changed 'on-file-changed))))
     (set-client client)
     (client:sign-in-if-required client)
     (client:set-user-if-not-set client)
