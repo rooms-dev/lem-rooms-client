@@ -122,7 +122,7 @@
   (code "code"))
 
 (define-json-structure (entered-room :converter convert-to-entered-room)
-  (client-id "clientID"))
+  (client-id "clientId"))
 
 (define-json-structure (commented-user :converter convert-to-commented-user)
   (client-id "clientId")
