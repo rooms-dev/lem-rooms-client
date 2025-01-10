@@ -14,7 +14,7 @@
            #:room-scope
            #:room-websocket-url
            #:user-state
-           #:user-state-id
+           #:user-state-client-id
            #:user-state-name
            #:user-state-color
            #:user-state-room-id
@@ -101,7 +101,7 @@
   (websocket-url "websocket_url"))
 
 (define-json-structure (user-state :converter convert-to-user-state)
-  (id "id")
+  (client-id "clientId")
   (name "name")
   (color "color")
   (room-id "roomId")

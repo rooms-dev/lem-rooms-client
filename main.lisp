@@ -205,7 +205,7 @@
                                                              (agent-api:user-state-path user)))
         (when (eq buffer (window-buffer (current-window)))
           (cursor:set-cursor buffer
-                             (agent-api:user-state-id user)
+                             (agent-api:user-state-client-id user)
                              (agent-api:user-state-name user)
                              (agent-api:user-state-color user)
                              (lsp-to-lem-position (agent-api:user-state-position user))))))))
