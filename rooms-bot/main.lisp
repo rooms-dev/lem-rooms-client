@@ -37,14 +37,16 @@
     (unless (equal (agent-api:commented-user-id (agent-api:comment-user comment))
                    (client:user-id client))
       (sleep 1)
-      (client:comment client $room (agent-api:comment-text comment))))
+      (client:comment client
+                      (agent-api:commented-event-room-id event)
+                      (agent-api:comment-text comment))))
   #+(or)
   (let ((comment (first (agent-api:commented-event-added event))))
     ;; TODO: 自分と他人を区別できるようにする
     (when (equal "cxxxr"
                  (agent-api:commented-user-name
                   (agent-api:comment-user comment)))
-      (let ((response 
+      (let ((response
               (ollama/utils:slurp
                (ollama:generate (agent-api:comment-text
                                  comment)

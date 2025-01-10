@@ -134,5 +134,9 @@
 (defmethod get-comments ((client client) room)
   (agent-api:get-comments (client-agent client) :room-id (agent-api:room-id room)))
 
-(defmethod comment ((client client) room text)
-  (agent-api:comment (client-agent client) :room-id (agent-api:room-id room) :text text))
+(defmethod comment ((client client) room-or-id text)
+  (agent-api:comment (client-agent client)
+                     :room-id (if (typep room-or-id 'agent-api:room)
+                                  (agent-api:room-id room-or-id)
+                                  room-or-id)
+                     :text text))
