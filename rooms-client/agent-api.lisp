@@ -31,6 +31,8 @@
            #:entered-room
            #:entered-room-client-id
            #:commented-user
+           #:commented-user-client-id
+           #:commented-user-id
            #:commented-user-name
            #:commented-user-color
            #:comment
@@ -123,6 +125,8 @@
   (client-id "clientID"))
 
 (define-json-structure (commented-user :converter convert-to-commented-user)
+  (client-id "clientId")
+  (id "id")
   (name "name")
   (color "color"))
 

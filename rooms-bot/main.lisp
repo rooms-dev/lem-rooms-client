@@ -33,7 +33,12 @@
   )
 
 (defun on-comments (client event)
-  (defparameter $on-comments event)
+  (dolist (comment (agent-api:commented-event-added event))
+    (unless (equal (agent-api:commented-user-id (agent-api:comment-user comment))
+                   (client:user-id client))
+      (sleep 1)
+      (client:comment client $room (agent-api:comment-text comment))))
+  #+(or)
   (let ((comment (first (agent-api:commented-event-added event))))
     ;; TODO: 自分と他人を区別できるようにする
     (when (equal "cxxxr"
