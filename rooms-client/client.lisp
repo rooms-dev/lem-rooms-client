@@ -7,6 +7,7 @@
            #:client-agent
            #:client-user
            #:launch
+           #:user-id
            #:user-name
            #:sign-in-if-required
            #:sign-in
@@ -63,6 +64,9 @@
     (set-client-agent agent client)
     client))
 
+(defmethod user-id ((client client))
+  (getf (client-user client) :id))
+
 (defmethod user-name ((client client))
   (getf (client-user client) :github-login))
 
@@ -118,6 +122,7 @@
   (check-type room agent-api:room)
   (agent-api:enter-room (client-agent client)
                         :room-id (agent-api:room-id room)
+                        :user-id (user-id client)
                         :user-name (user-name client)
                         :websocket-url (agent-api:room-websocket-url room)
                         :access-token (client-access-token client)))

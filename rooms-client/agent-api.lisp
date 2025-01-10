@@ -192,11 +192,12 @@
                     :ops ops))
   (values))
 
-(defun enter-room (agent &key room-id user-name websocket-url access-token)
+(defun enter-room (agent &key room-id user-id user-name websocket-url access-token)
   (convert-to-entered-room
    (agent:call agent
                "enter-room"
                (hash :room-id room-id
+                     :user-id user-id
                      :user-name user-name
                      :websocket-url websocket-url
                      :access-token access-token))))
