@@ -15,6 +15,7 @@
            #:room-websocket-url
            #:user-state
            #:user-state-client-id
+           #:user-state-id
            #:user-state-name
            #:user-state-color
            #:user-state-room-id
@@ -102,6 +103,7 @@
 
 (define-json-structure (user-state :converter convert-to-user-state)
   (client-id "clientId")
+  (id "id")
   (name "name")
   (color "color")
   (room-id "roomId")
