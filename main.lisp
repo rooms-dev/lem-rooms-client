@@ -198,7 +198,7 @@
 
 (defun update-cursors (users)
   (do-sequence (user users)
-    (declare (agent-api::user-state user))
+    (declare (agent-api:user-state user))
     (when (and (not (agent-api:user-state-myself user))
                (agent-api:user-state-active user))
       (when-let (buffer (buffer:find-buffer-by-room-and-path (agent-api:user-state-room-id user)
@@ -214,7 +214,7 @@
   (send-event
    (lambda ()
      (when-let* ((users (map 'list
-                             #'agent-api::convert-to-user-state
+                             #'agent-api:convert-to-user-state
                              (remove-if #'null (gethash "users" params))))
                  (room-id (block found
                             (map ()

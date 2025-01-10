@@ -169,7 +169,7 @@
               (erase-buffer users-buffer)
               (with-point ((point (buffer-point users-buffer) :left-inserting))
                 (do-sequence (user users)
-                  (declare (agent-api::user-state user))
+                  (declare (agent-api:user-state user))
                   (let ((name (agent-api:user-state-name user))
                         (color (agent-api:user-state-color user)))
                     (insert-color-text point (format nil " ~A " name) color)
