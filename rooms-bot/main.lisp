@@ -9,6 +9,7 @@
                                :on-connected 'on-connected
                                :on-disconnected 'on-disconnected
                                :on-edit 'on-edit
+
                                :on-users 'on-users
                                :on-comments 'on-comments
                                :on-file-changed 'on-file-changed)))

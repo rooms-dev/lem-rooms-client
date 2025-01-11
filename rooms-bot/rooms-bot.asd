@@ -1,4 +1,4 @@
 (defsystem "rooms-bot"
   :depends-on ("rooms-client"
                "ollama")
-  :components ((:file "main")))
+  :components ((:file "sbcl")))
