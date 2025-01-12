@@ -94,12 +94,19 @@
 
 (defun notify-focus (point)
   (let ((buffer (point-buffer point)))
-    (when (buffer:room-id buffer)
-      (agent-api:focus (client:client-agent (client))
-                       :name (client:user-name (client))
-                       :room-id (buffer:room-id buffer)
-                       :path (buffer:path buffer)
-                       :position (position-of point)))))
+    (cond ((buffer:room-id buffer)
+           (agent-api:focus (client:client-agent (client))
+                            :name (client:user-name (client))
+                            :room-id (buffer:room-id buffer)
+                            :path (buffer:path buffer)
+                            :position (position-of point)))
+          ((default-room)
+           (agent-api:focus (client:client-agent (client))
+                            :name (client:user-name (client))
+                            ;; TODO: 複数のroomを開いている場合にどうするか
+                            :room-id (room-id (default-room))
+                            :path nil
+                            :position nil)))))
 
 (defvar *edit-queue* (sb-concurrency:make-queue :name "lem-rooms-client/edit-queue"))
 
@@ -199,19 +206,29 @@
                     (management-pane:redraw pane :users '())
                     (redraw-display))))))
 
+(defun update-cursor (user)
+  (when (agent-api:user-state-active user)
+    (or (when-let (buffer (buffer:find-buffer-by-room-and-path
+                           (agent-api:user-state-room-id user)
+                           (agent-api:user-state-path user)))
+          (when (eq buffer (window-buffer (current-window)))
+            (cursor:update-cursor buffer
+                                  (agent-api:user-state-client-id user)
+                                  (agent-api:user-state-name user)
+                                  (agent-api:user-state-color user)
+                                  (lsp-to-lem-position (agent-api:user-state-position user)))
+            t))
+        (cursor:delete-cursor (agent-api:user-state-client-id user)))))
+
 (defun update-cursors (users)
-  (do-sequence (user users)
-    (declare (agent-api:user-state user))
-    (when (and (not (agent-api:user-state-myself user))
-               (agent-api:user-state-active user))
-      (when-let (buffer (buffer:find-buffer-by-room-and-path (agent-api:user-state-room-id user)
-                                                             (agent-api:user-state-path user)))
-        (when (eq buffer (window-buffer (current-window)))
-          (cursor:set-cursor buffer
-                             (agent-api:user-state-client-id user)
-                             (agent-api:user-state-name user)
-                             (agent-api:user-state-color user)
-                             (lsp-to-lem-position (agent-api:user-state-position user))))))))
+  (let ((exclude-deleting-users '()))
+    (do-sequence (user users)
+      (declare (agent-api:user-state user))
+      (unless (agent-api:user-state-myself user)
+        (update-cursor user))
+      (push (agent-api:user-state-client-id user)
+            exclude-deleting-users))
+    (cursor:delete-cursors-by-excluding-ids exclude-deleting-users)))
 
 (defun on-users (params)
   (send-event

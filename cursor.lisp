@@ -2,42 +2,54 @@
   (:use #:cl
         #:lem-rooms-client/utils
         #:lem-rooms-client/editor)
-  (:export #:set-cursor))
+  (:export #:delete-cursors-by-excluding-ids
+           #:delete-cursor
+           #:update-cursor))
 (in-package #:lem-rooms-client/cursor)
 
+(defvar *cursors* '())
+
 (defclass cursor-overlay (lem-core::cursor-overlay)
-  ((user-id :initarg :user-id)
+  ((client-id :initarg :client-id :reader cursor-overlay-client-id)
    (user-name :initarg :user-name)
    (popup-message :initarg :popup-message
                   :initform nil
                   :accessor cursor-overlay-popup-message)))
 
-(defun make-cursor-overlay (&key point attribute user-id user-name)
-  (make-instance 'cursor-overlay
-                 :user-id user-id
-                 :user-name user-name
-                 :start point
-                 :end point
-                 :buffer (lem:point-buffer point)
-                 :temporary nil
-                 :fake t
-                 :attribute attribute))
+(defun make-cursor-overlay (&key point attribute client-id user-name)
+  (let ((cursor (make-instance 'cursor-overlay
+                               :client-id client-id
+                               :user-name user-name
+                               :start point
+                               :end point
+                               :buffer (lem:point-buffer point)
+                               :temporary nil
+                               :fake t
+                               :attribute attribute)))
+    (push cursor *cursors*)
+    cursor))
 
 (defun delete-cursor-overlay (cursor-overlay)
   (alexandria:when-let (popup-message (cursor-overlay-popup-message cursor-overlay))
     (lem:delete-popup-message popup-message))
   (lem:delete-overlay cursor-overlay))
 
-(defun buffer-cursors (buffer)
-  (or (lem:buffer-value buffer 'cursors)
-      (setf (lem:buffer-value buffer 'cursors)
-            (make-hash-table :test 'equal))))
+(defun delete-cursors-by-excluding-ids (ids)
+  (dolist (cursor *cursors*)
+    (unless (member (cursor-overlay-client-id cursor) ids)
+      (delete-cursor-overlay cursor)
+      (setf *cursors* (delete cursor *cursors*))))
+  (values))
 
-(defun get-cursor (buffer id)
-  (gethash id (buffer-cursors buffer)))
+(defun delete-cursor (id)
+  (let ((cursor (find id *cursors* :key #'cursor-overlay-client-id)))
+    (when cursor
+      (delete-cursor-overlay cursor)
+      (setf *cursors* (remove id *cursors* :key #'cursor-overlay-client-id))))
+  (values))
 
-(defun (setf get-cursor) (cursor buffer id)
-  (setf (gethash id (buffer-cursors buffer)) cursor))
+(defun find-cursor (id)
+  (find id *cursors* :key #'cursor-overlay-client-id))
 
 (defun point-in-window-p (point window)
   (lem:with-point ((view-top (lem:window-view-point window))
@@ -48,8 +60,8 @@
                  point
                  view-bottom)))
 
-(defun set-cursor (buffer id name color position)
-  (let ((cursor (get-cursor buffer id)))
+(defun update-cursor (buffer id name color position)
+  (let ((cursor (find-cursor id)))
     (cond ((null cursor)
            (assert color)
            (let ((attribute (lem:make-attribute
@@ -57,17 +69,22 @@
                              :background color)))
              (lem:with-point ((point (lem:buffer-point buffer)))
                (lem:move-to-position point position)
-               (setf (get-cursor buffer id)
-                     (make-cursor-overlay :point point
-                                          :attribute attribute
-                                          :user-id id
-                                          :user-name name)))))
+               (setf cursor (make-cursor-overlay :point point
+                                                 :attribute attribute
+                                                 :client-id id
+                                                 :user-name name)))))
           (t
+           (unless (eq (lem:overlay-buffer cursor) buffer)
+             (delete-cursor-overlay cursor)
+             (lem:with-point ((point (lem:buffer-point buffer)))
+               (setf cursor (make-cursor-overlay :point point
+                                                 :attribute (lem:overlay-attribute cursor)
+                                                 :client-id id
+                                                 :user-name name))))
            (lem:move-to-position (lem:overlay-start cursor)
                                  position)
            (lem:move-to-position (lem:overlay-end cursor)
-                                 position))))
-  (let ((cursor (get-cursor buffer id)))
+                                 position)))
     (alexandria:when-let (popup-message (cursor-overlay-popup-message cursor))
       (lem:delete-popup-message popup-message))
 
