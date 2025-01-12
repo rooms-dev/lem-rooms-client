@@ -477,23 +477,33 @@
 (defun choose-user (user-states)
   (if (length= 1 user-states)
       (first user-states)
-      (prompt-for-string
-       "To which user?: "
-       :completion-function (lambda (s)
-                              (let ((result
-                                      (completion-strings s
-                                                          user-states
-                                                          :key #'agent-api:user-state-name)))
-                                (mapcar #'agent-api:user-state-name result)))
-       :test-function (lambda (s)
-                        (member s
-                                user-states
-                                :key #'agent-api:user-state-name
-                                :test #'equal)))))
+      (let* ((completion-items (mapcar (lambda (user)
+                                         (lem/completion-mode:make-completion-item
+                                          :label (agent-api:user-state-name user)))
+                                       user-states))
+             (user-name
+               (prompt-for-string
+                "To which user?: "
+                :completion-function (lambda (s)
+                                       (completion-strings
+                                        s
+                                        completion-items
+                                        :key #'lem/completion-mode:completion-item-label))
+                :test-function (lambda (s)
+                                 (member s
+                                         completion-items
+                                         :key #'lem/completion-mode:completion-item-label
+                                         :test #'equal)))))
+        (find user-name
+              user-states
+              :key #'agent-api:user-state-name
+              :test #'string=))))
 
 (defun jump-to (user-state room)
   (let ((path (agent-api:user-state-path user-state))
         (position (agent-api:user-state-position user-state)))
+    (unless path
+      (editor-error "The user has not opened any files"))
     (find-file (merge-pathnames path (room-directory room)))
     (move-to-position* (current-point) position)))
 
