@@ -60,7 +60,6 @@
                                    :on-comments 'on-comments
                                    :on-file-changed 'on-file-changed))))
     (set-client client)
-    (client:sign-in-if-required client)
     client))
 
 (defun sign-out (client)
@@ -74,8 +73,15 @@
 
 (defun init ()
   (rooms-mode t)
-  (launch-client)
-  (init-editor-hooks))
+  (init-editor-hooks)
+  (let ((client (launch-client)))
+    (client:sign-in-if-required client)))
+
+(defun init-with-backdoor (name)
+  (rooms-mode t)
+  (init-editor-hooks)
+  (let ((client (launch-client)))
+    (client:sign-in-backdoor client name)))
 
 (defun init-editor-hooks ()
   (add-hook *post-command-hook* 'on-post-command)
@@ -439,6 +445,11 @@
   "Sign in to Rooms"
   (sign-out (client))
   (init)
+  (message "Sign-in Successful"))
+
+(define-command rooms-backdoor (name) ((:string "Name: "))
+  (sign-out (client))
+  (init-with-backdoor name)
   (message "Sign-in Successful"))
 
 (defun get-current-room ()
