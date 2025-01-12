@@ -45,9 +45,6 @@
   (setf (lem:config :rooms.access-token) token))
 
 (defmethod (setf client:client-user) :before (user (client client))
-  (assert (getf user :id))
-  (assert (getf user :github-login))
-  (assert (getf user :avatar-url))
   (setf (lem:config :room.user) user))
 
 (defun launch-client ()
