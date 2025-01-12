@@ -28,6 +28,9 @@
 (define-attribute sub-header-attribute
   (t :bold t))
 
+(define-attribute button-attribute
+  (t :underline t))
+
 (defstruct comment
   user-name
   user-color
@@ -131,9 +134,24 @@
                                      :foreground (best-foreground-color (background-color))))
           (insert-character point #\newline)
           (insert-character point #\newline)
-          (insert-string point "Tips:")
+          (insert-string point "Usage:" :attribute 'sub-header-attribute)
           (insert-character point #\newline)
-          (insert-string point "M-x rooms-command-palette (M-P)")
+          (insert-string point "How to open the Rooms command palette:")
+          (insert-character point #\newline)
+          (lem/button:insert-button point
+                                    "M-x rooms-command-palette (M-P)"
+                                    (lambda ()
+                                      (call-command (find-command "rooms-command-palette") nil))
+                                    :attribute 'button-attribute)
+          (insert-character point #\newline)
+          (insert-character point #\newline)
+          (insert-string point "To toggle this pane:")
+          (insert-character point #\newline)
+          (lem/button:insert-button point
+                                    "M-x rooms-toggle-pane"
+                                    (lambda ()
+                                      (call-command (find-command "rooms-toggle-pane") nil))
+                                    :attribute 'button-attribute)
           (insert-character point #\newline)
           (insert-character point #\newline)
           (insert-string point "Name:" :attribute 'sub-header-attribute)
