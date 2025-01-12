@@ -39,6 +39,15 @@
 (defun (setf get-cursor) (cursor buffer id)
   (setf (gethash id (buffer-cursors buffer)) cursor))
 
+(defun point-in-window-p (point window)
+  (lem:with-point ((view-top (lem:window-view-point window))
+                   (view-bottom (lem:window-view-point window)))
+    (unless (lem:line-offset view-bottom (1- (lem:window-height window)))
+      (lem:buffer-end view-bottom))
+    (lem:point<= view-top
+                 point
+                 view-bottom)))
+
 (defun set-cursor (buffer id name color position)
   (let ((cursor (get-cursor buffer id)))
     (cond ((null cursor)
@@ -61,15 +70,17 @@
   (let ((cursor (get-cursor buffer id)))
     (alexandria:when-let (popup-message (cursor-overlay-popup-message cursor))
       (lem:delete-popup-message popup-message))
-    (lem:save-excursion
-      (setf (lem:current-buffer) buffer)
-      (lem:move-to-position (lem:current-point) position)
-      (setf (cursor-overlay-popup-message cursor)
-            (lem:display-popup-message (format nil " ~A " name)
-                                       :timeout 1
-                                       :style `(:gravity :cursor
-                                                :use-border nil
-                                                :background-color ,color
-                                                :offset-y -1
-                                                :cursor-invisible t)))))
+
+    (when (point-in-window-p (lem:overlay-start cursor) (lem:current-window))
+      (lem:save-excursion
+        (setf (lem:current-buffer) buffer)
+        (lem:move-to-position (lem:current-point) position)
+        (setf (cursor-overlay-popup-message cursor)
+              (lem:display-popup-message (format nil " ~A " name)
+                                         :timeout 1
+                                         :style `(:gravity :cursor
+                                                  :use-border nil
+                                                  :background-color ,color
+                                                  :offset-y -1
+                                                  :cursor-invisible t))))))
   (values))
