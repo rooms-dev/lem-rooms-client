@@ -63,7 +63,8 @@
            #:edit
            #:enter-room
            #:share-directory
-           #:open-file
+           #:share-file
+           #:sync-file
            #:sync-directory
            #:comment
            #:get-comments
@@ -209,19 +210,25 @@
                      :access-token access-token))))
 
 (defun share-directory (agent &key room-id path)
-  (agent:notify agent
-                "share-directory"
-                (hash :room-id room-id
-                      :path path))
+  (agent:call agent
+              "share-directory"
+              (hash :room-id room-id
+                    :directory path))
   (values))
 
-(defun open-file (agent &key room-id path text)
-  (let ((text (agent:call agent
-                          "open-file"
-                          (hash :room-id room-id
-                                :path path
-                                :text text))))
-    text))
+(defun share-file (agent &key room-id path text)
+  (agent:call agent
+              "share-file"
+              (hash :room-id room-id
+                    :path path
+                    :text text)))
+
+(defun sync-file (agent &key room-id path text)
+  (agent:call agent
+              "sync-file"
+              (hash :room-id room-id
+                    :path path
+                    :text text)))
 
 (defun sync-directory (agent &key room-id)
   (let ((directory-name (agent:call agent

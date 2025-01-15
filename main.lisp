@@ -307,16 +307,26 @@
         (replace-buffer-text buffer text)
         (message "Rooms BUG/FIX: The text synchronization had failed, so it was resynchronized")))))
 
+(defun open-file (client room path text)
+  ;; TODO: room-ownerであるかの判別、room ownerが退室してから入室した場合を考える
+  (if (room-owner-p room)
+      (agent-api:share-file (client:client-agent client)
+                            :room-id (room-id room)
+                            :path path
+                            :text text)
+      (agent-api:sync-file (client:client-agent client)
+                           :room-id (room-id room)
+                           :path path
+                           :text text)))
+
 (defun on-find-file (buffer)
   (when-let (room (find-room-by-file (buffer-filename buffer)))
     (let* ((room-id (room-id room))
            (path (namestring
                   (enough-namestring (buffer-filename buffer)
                                      (room-directory room))))
-           (text (agent-api:open-file (client:client-agent (client))
-                                      :room-id room-id
-                                      :path path
-                                      :text (buffer-text buffer))))
+           (text
+             (open-file (client) room path (buffer-text buffer))))
       (when (and text (string/= text (buffer-text buffer)))
         (erase-buffer buffer)
         (insert-string (buffer-point buffer) text)
