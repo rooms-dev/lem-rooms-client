@@ -32,7 +32,7 @@
   (let ((room (make-room :id (rooms-client/agent-api:room-id room)
                          :room room
                          :name room-name
-                         :directory directory
+                         :directory (and directory (namestring (uiop:ensure-directory-pathname directory)))
                          :management-pane management-pane
                          :owner-p owner-p)))
     (push room *rooms*)
