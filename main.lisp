@@ -194,9 +194,11 @@
                     (management-pane:redraw pane
                                             :users (map 'list #'agent-api::convert-to-user-state users)
                                             :adding-comments (management-pane:convert-comments
-                                                              comments))
+                                                              (map 'list
+                                                                   #'agent-api::convert-to-comment
+                                                                   comments)))
                     (redraw-display))))))
-
+c
 (defun on-disconnected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
