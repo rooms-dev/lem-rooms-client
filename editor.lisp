@@ -7,6 +7,7 @@
            #:move-to-position*
            #:browser-frontend-p
            #:best-foreground-color
+           #:lighten-color
            #:with-save-cursor
            #:close-rightside-window))
 (in-package #:lem-rooms-client/editor)
@@ -42,6 +43,16 @@
         (if (> luminance 0.5)
             "black"
             "white")))))
+
+(defun lighten-color (color &key (factor 0.5))
+  (let ((color (parse-color color)))
+    (multiple-value-bind (h s v)
+        (lem:rgb-to-hsv (color-red color) (color-green color) (color-blue color))
+      (multiple-value-bind (r g b)
+          (hsv-to-rgb h
+                      (* s (- 1 factor))
+                      v)
+        (make-color r g b)))))
 
 (defun call-with-save-cursor (buffer function)
   (let* ((point (buffer-point buffer))

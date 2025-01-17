@@ -13,6 +13,9 @@
            #:room-users
            #:room-scope
            #:room-websocket-url
+           #:range
+           #:range-start
+           #:range-end
            #:user-state
            #:user-state-client-id
            #:user-state-id
@@ -21,6 +24,7 @@
            #:user-state-room-id
            #:user-state-path
            #:user-state-position
+           #:user-state-range
            #:user-state-active
            #:user-state-myself
            #:authenticated
@@ -104,6 +108,10 @@
   (scope "scope")
   (websocket-url "websocket_url"))
 
+(define-json-structure (range :converter convert-to-range)
+  (start "start")
+  (end "end"))
+
 (define-json-structure (user-state :converter convert-to-user-state)
   (client-id "clientId")
   (id "id")
@@ -112,6 +120,9 @@
   (room-id "roomId")
   (path "path")
   (position "position")
+  (range "range" :converter (lambda (value)
+                              (when value
+                                (convert-to-range value))))
   (active "active")
   (myself "myself"))
 
@@ -182,13 +193,14 @@
                (hash :invitation-code invitation-code
                      :access-token access-token))))
 
-(defun focus (agent &key name room-id path position)
+(defun focus (agent &key name room-id path position range)
   (agent:notify agent
                 "focus"
                 (hash :name name
                       :room-id room-id
                       :path path
-                      :position position))
+                      :position position
+                      :range range))
   (values))
 
 (defun edit (agent &key room-id path ops)
