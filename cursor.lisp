@@ -20,8 +20,8 @@
   (let ((cursor (make-instance 'cursor-overlay
                                :client-id client-id
                                :user-name user-name
-                               :start point
-                               :end point
+                               :start (lem:copy-point point :left-inserting)
+                               :end (lem:copy-point point :left-inserting)
                                :buffer (lem:point-buffer point)
                                :temporary nil
                                :fake t
@@ -30,6 +30,8 @@
     cursor))
 
 (defun delete-cursor-overlay (cursor-overlay)
+  (lem:delete-point (lem:overlay-start cursor-overlay))
+  (lem:delete-point (lem:overlay-end cursor-overlay))
   (alexandria:when-let (popup-message (cursor-overlay-popup-message cursor-overlay))
     (lem:delete-popup-message popup-message))
   (lem:delete-overlay cursor-overlay))
