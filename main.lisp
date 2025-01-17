@@ -198,7 +198,7 @@
                                                                    #'agent-api::convert-to-comment
                                                                    comments)))
                     (redraw-display))))))
-c
+
 (defun on-disconnected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
