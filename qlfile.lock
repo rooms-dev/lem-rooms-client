@@ -25,7 +25,7 @@
 ("lem" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/lem.git")
-  :version "git-0d2ce9f8b51a51cbdc79112a025b9b9350bd01fe"))
+  :version "git-c593ec95392bc49b534320f7d4b58e98e67704f0"))
 ("ollama" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/cxxxr/cl-ollama.git")
