@@ -8,6 +8,9 @@
         #:lem-rooms-client/room
         #:lem-rooms-client/user
         #:lem-rooms-client/defcommand)
+  (:import-from #:lem-rooms-client/chase
+                #:chase-client-id
+                #:chase-user-cursor)
   (:local-nicknames (#:cursor #:lem-rooms-client/cursor)
                     (#:agent #:rooms-client/agent)
                     (#:agent-api #:rooms-client/agent-api)
@@ -261,8 +264,18 @@
                                  users)))
                  (room (find-room-by-id room-id)))
        (update-cursors users)
-       (management-pane:redraw (room-management-pane room) :users users)
-       (redraw-display)))))
+
+       (when (chase-client-id)
+         (when-let ((user (find (chase-client-id)
+                                users
+                                :key #'agent-api:user-state-client-id
+                                :test #'equal)))
+           (when (agent-api:user-state-active user)
+             (jump-to user room))))
+
+       (when (zerop (event-queue-length))
+         (management-pane:redraw (room-management-pane room) :users users)
+         (redraw-display))))))
 
 (defun on-comments (client event)
   (declare (ignore client))
@@ -547,18 +560,34 @@
   (let ((path (agent-api:user-state-path user-state))
         (position (agent-api:user-state-position user-state)))
     (unless path
-      (editor-error "The user has not opened any files"))
+      (return-from jump-to nil))
     (find-file (merge-pathnames path (room-directory room)))
-    (move-to-position* (current-point) position)))
+    (move-to-position* (current-point) position)
+    t))
+
+(defun get-other-user-states ()
+  (when-let (room (get-current-room))
+    (values (remove-if #'agent-api:user-state-myself
+                       (agent-api:get-users (client:client-agent (client))
+                                            :room-id (room-id room)))
+            room)))
 
 (define-rooms-command rooms-jump-to-other-user-cursor () ()
   "Jump to the cursor position of other user"
-  (when-let (room (get-current-room))
-    (let ((user-state
-            (choose-user (remove-if #'agent-api:user-state-myself
-                                    (agent-api:get-users (client:client-agent (client))
-                                                         :room-id (room-id room))))))
-      (jump-to user-state room))))
+  (multiple-value-bind (user-states room)
+      (get-other-user-states)
+    (when user-states
+      (let ((user-state (choose-user user-states)))
+        (unless (jump-to user-state room)
+          (editor-error "The user has not opened any files"))))))
+
+(define-rooms-command rooms-chase-other-user-cursor () ()
+  "chase the cursor position of other user"
+  (multiple-value-bind (user-states room)
+      (get-other-user-states)
+    (when user-states
+      (let ((user-state (choose-user user-states)))
+        (chase-user-cursor user-state room)))))
 
 (define-command rooms-command-palette (arg) (:universal-nil)
   (let* ((commands (list-rooms-commands))

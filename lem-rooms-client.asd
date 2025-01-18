@@ -13,4 +13,5 @@
                (:file "buffer")
                (:file "connected-hook")
                (:file "management-pane")
+               (:file "chase")
                (:file "main")))
