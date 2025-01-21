@@ -88,9 +88,9 @@
 
 (defun create-pane (room-id)
   (close-rightside-window)
-  (let ((pane (make-management-pane :room-id room-id)))
-    (let ((window (make-rightside-window (management-pane-buffer pane) :width +pane-default-width+)))
-      (setf (window-buffer-switchable-p window) nil))
+  (let* ((pane (make-management-pane :room-id room-id))
+         (window (make-rightside-window (management-pane-buffer pane) :width +pane-default-width+)))
+    (setf (window-buffer-switchable-p window) nil)
     pane))
 
 (defun redisplay-management-pane (room)
