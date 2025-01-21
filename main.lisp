@@ -190,7 +190,6 @@
                          (t
                           (log:error "unexpected delta: ~A" (pretty-json delta))))))))))
        (when (and edited (zerop (event-queue-length)))
-         ;; (notify-focus (current-point))
          (redraw-display)))))
   (send-event (lambda () (consume-edit-queue))))
 
