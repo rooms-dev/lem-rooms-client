@@ -44,7 +44,7 @@
            #:comment-text
            #:comment-date
            #:commented-event
-           #:commented-event-added
+           #:commented-event-comments
            #:commented-event-room-id
            #:convert-to-user
            #:convert-to-room
@@ -149,7 +149,7 @@
   (date "date"))
 
 (define-json-structure (commented-event :converter convert-to-commented-event)
-  (added "added" :converter (lambda (value) (map 'list #'convert-to-comment value)))
+  (comments "comments" :converter (lambda (value) (map 'list #'convert-to-comment value)))
   (room-id "roomId"))
 
 (defun sign-in (agent &key name)

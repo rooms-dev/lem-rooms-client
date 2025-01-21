@@ -207,10 +207,10 @@
                     (management-pane:connected pane)
                     (management-pane:redraw pane
                                             :users (map 'list #'agent-api::convert-to-user-state users)
-                                            :adding-comments (management-pane:convert-comments
-                                                              (map 'list
-                                                                   #'agent-api::convert-to-comment
-                                                                   comments)))
+                                            :comments (management-pane:convert-comments
+                                                       (map 'list
+                                                            #'agent-api::convert-to-comment
+                                                            comments)))
                     (redraw-display))))))
 
 (defun on-disconnected (params)
@@ -284,8 +284,8 @@
      (when-let ((room (find-room-by-id (agent-api:commented-event-room-id event))))
        (management-pane:redraw
         (room-management-pane room)
-        :adding-comments (management-pane:convert-comments
-                          (agent-api:commented-event-added event)))))))
+        :comments (management-pane:convert-comments
+                   (agent-api:commented-event-comments event)))))))
 
 (defun on-file-changed (params)
   (send-event

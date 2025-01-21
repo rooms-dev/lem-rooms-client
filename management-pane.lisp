@@ -126,7 +126,7 @@
                  :attribute (make-attribute :foreground (best-foreground-color color)
                                             :background color)))
 
-(defmethod redraw ((pane management-pane) &key (users nil users-p) adding-comments)
+(defmethod redraw ((pane management-pane) &key (users nil users-p) (comments nil comments-p))
   (with-save-cursor (current-buffer)
     (let ((buffer (management-pane-buffer pane))
           (room (room:find-room-by-id (management-pane-room-id pane))))
@@ -206,18 +206,20 @@
           (insert-character point #\newline)
           (insert-character point #\newline)
           (let ((comment-buffer (management-pane-comment-buffer pane)))
-            (with-point ((point (buffer-point comment-buffer) :left-inserting))
-              (dolist (comment adding-comments)
-                (buffer-start point)
-                (insert-string point
-                               (format nil
-                                       "[~2,'0D:~2,'0D:~2,'0D]"
-                                       (local-time:timestamp-hour (comment-date comment))
-                                       (local-time:timestamp-minute (comment-date comment))
-                                       (local-time:timestamp-second (comment-date comment))))
-                (insert-color-text point
-                                   (format nil " ~A " (comment-user-name comment))
-                                   (comment-user-color comment))
-                (insert-string point (format nil ": ~A~%" (comment-text comment)))))
+            (when comments-p
+              (erase-buffer comment-buffer)
+              (with-point ((point (buffer-point comment-buffer) :left-inserting))
+                (dolist (comment comments)
+                  (buffer-start point)
+                  (insert-string point
+                                 (format nil
+                                         "[~2,'0D:~2,'0D:~2,'0D]"
+                                         (local-time:timestamp-hour (comment-date comment))
+                                         (local-time:timestamp-minute (comment-date comment))
+                                         (local-time:timestamp-second (comment-date comment))))
+                  (insert-color-text point
+                                     (format nil " ~A " (comment-user-name comment))
+                                     (comment-user-color comment))
+                  (insert-string point (format nil ": ~A~%" (comment-text comment))))))
             (insert-buffer point comment-buffer)))
         (buffer-start (buffer-point buffer))))))
