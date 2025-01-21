@@ -11,6 +11,7 @@
            #:room-invitation
            #:room-owner-p
            #:register-room
+           #:remove-room
            #:set-room-directory
            #:find-room-by-id
            #:find-room-by-file
@@ -37,6 +38,9 @@
                          :owner-p owner-p)))
     (push room *rooms*)
     room))
+
+(defun remove-room (room)
+  (setf *rooms* (remove room *rooms* :test #'eq)))
 
 (defmethod set-room-directory ((room room) directory)
   (setf (room-directory room)

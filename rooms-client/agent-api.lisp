@@ -73,7 +73,8 @@
            #:comment
            #:get-comments
            #:get-users
-           #:get-text))
+           #:get-text
+           #:disconnect))
 (in-package #:rooms-client/agent-api)
 
 (defgeneric convert (name value))
@@ -273,6 +274,10 @@
                           (hash :room-id room-id
                                 :path path))))
     text))
+
+(defun disconnect (agent &key room-id)
+  (agent:call agent "disconnect" (hash :room-id room-id))
+  (values))
 
 ;;; utils
 (defun hash (&rest plist)

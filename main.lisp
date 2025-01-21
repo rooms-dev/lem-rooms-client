@@ -216,7 +216,8 @@
 (defun on-disconnected (params)
   (let ((room-id (gethash "roomId" params)))
     (send-event (lambda ()
-                  (let ((pane (room-management-pane (find-room-by-id room-id))))
+                  (when-let* ((room (find-room-by-id room-id))
+                              (pane (room-management-pane room)))
                     (management-pane:disconnected pane)
                     (connected-hook:disconnect)
                     (management-pane:redraw pane :users '())
@@ -389,30 +390,40 @@
 (define-rooms-command rooms-create-room () ()
   "Create a new room"
   (init)
-  (let* ((room-name (prompt-for-string "Room name: "
-                                       :test-function (lambda (string)
-                                                        (< 0 (length string)))))
-         (scope (prompt-for-scope "Room scope: "))
-         (directory (prompt-for-directory "Share directory: "
-                                          :existing t
-                                          :directory (buffer-directory)))
-         (room-json (client:create-room (client) :scope scope :name room-name))
-         (room-id (agent-api:room-id room-json))
-         (management-pane (management-pane:create-pane room-id))
-         (room (register-room
-                :room room-json
-                :room-name (agent-api:room-name room-json)
-                :directory directory
-                :management-pane management-pane
-                :owner-p t)))
-    (management-pane:connecting management-pane)
-    (management-pane:redraw management-pane)
-    (enter-room room-json
-                :then (lambda ()
-                        (agent-api:share-directory (client:client-agent (client))
-                                                   :room-id room-id
-                                                   :path directory)
-                        (start-room room)))))
+
+  (let ((existing-room (default-room)))
+    (when existing-room
+      (unless (prompt-for-y-or-n-p "You are already in a room. Do you want to exit the room and create a new one?")
+        (return-from rooms-create-room)))
+
+    (let* ((room-name (prompt-for-string "Room name: "
+                                         :test-function (lambda (string)
+                                                          (< 0 (length string)))))
+           (scope (prompt-for-scope "Room scope: "))
+           (directory (prompt-for-directory "Share directory: "
+                                            :existing t
+                                            :directory (buffer-directory)))
+           (room-json (client:create-room (client) :scope scope :name room-name))
+           (room-id (agent-api:room-id room-json))
+           (management-pane (management-pane:create-pane room-id)))
+
+      (when existing-room
+        (exit-room existing-room))
+
+      (let ((room (register-room
+                   :room room-json
+                   :room-name (agent-api:room-name room-json)
+                   :directory directory
+                   :management-pane management-pane
+                   :owner-p t)))
+        (management-pane:connecting management-pane)
+        (management-pane:redraw management-pane)
+        (enter-room room-json
+                    :then (lambda ()
+                            (agent-api:share-directory (client:client-agent (client))
+                                                       :room-id room-id
+                                                       :path directory)
+                            (start-room room)))))))
 
 (defun join-room (room-json)
   (let* ((room-id (agent-api:room-id room-json))
@@ -421,6 +432,11 @@
            (management-pane:open-management-pane room)
            (find-file (room-directory room)))
           (t
+           (when-let (existing-room (default-room))
+             (unless (prompt-for-y-or-n-p
+                      "You are already in a room. Do you want to exit the room and join the new one?")
+	       (return-from join-room))
+             (exit-room existing-room))
            (let* ((management-pane (management-pane:create-pane room-id))
                   (room (register-room
                          :room room-json
@@ -461,6 +477,15 @@
                                                                      (join-room room)))
                                                   0)
                                      (lem/multi-column-list:quit component)))))
+
+(defun exit-room (room)
+  (agent-api:disconnect (client:client-agent (client)) :room-id (room-id room))
+  (remove-room room))
+
+(define-rooms-command rooms-exit-room () ()
+  (when-let (room (get-current-room))
+    (exit-room room)
+    (management-pane:delete-management-pane room)))
 
 (defparameter *recreation-invitation-code-message*
   (format nil "An invitation code has already been issued.~@

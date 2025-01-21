@@ -11,6 +11,7 @@
            #:convert-comments
            #:create-pane
            #:open-management-pane
+           #:delete-management-pane
            #:current-management-pane
            #:connected
            #:disconnected
@@ -100,6 +101,12 @@
     (let ((window (make-rightside-window (management-pane-buffer pane) :width +pane-default-width+)))
       (setf (window-buffer-switchable-p window) nil))
     pane))
+
+(defun delete-management-pane (room)
+  (let ((rightside-buffer (window-buffer (frame-rightside-window (current-frame))))
+        (pane (room:room-management-pane room)))
+    (when (eq rightside-buffer (management-pane-buffer pane))
+      (close-rightside-window))))
 
 (defun open-management-pane (room)
   (redisplay-management-pane room))
