@@ -270,7 +270,7 @@
 
 (defun get-text (agent &key room-id path)
   (let ((text (agent:call agent
-                          "testing/get-text"
+                          "get-text"
                           (hash :room-id room-id
                                 :path path))))
     text))
