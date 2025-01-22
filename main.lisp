@@ -1,16 +1,39 @@
 (uiop:define-package #:lem-rooms-client
   (:use #:cl
         #:alexandria
-        #:lem
-        #:rooms-client/agent
-        #:lem-rooms-client/utils
-        #:lem-rooms-client/editor
-        #:lem-rooms-client/room
-        #:lem-rooms-client/user
-        #:lem-rooms-client/defcommand)
+        #:lem)
+  (:import-from #:lem-rooms-client/utils
+                #:do-sequence
+                #:hash
+                #:pretty-json)
+  (:import-from #:lem-rooms-client/room
+                #:room-management-pane
+                #:room-room
+                #:room-id
+                #:room-name
+                #:room-directory
+                #:room-invitation
+                #:room-owner-p
+                #:register-room
+                #:remove-room
+                #:set-room-directory
+                #:find-room-by-id
+                #:find-room-by-file
+                #:default-room)
+  (:import-from #:lem-rooms-client/defcommand
+                #:define-rooms-command
+                #:rooms-command-name
+                #:rooms-command-description
+                #:list-rooms-commands)
   (:import-from #:lem-rooms-client/chase
                 #:chase-client-id
                 #:chase-user-cursor)
+  (:import-from #:lem-rooms-client/editor
+                #:lsp-to-lem-position
+                #:position-of
+                #:move-to-position*
+                #:with-save-cursor
+                #:close-rightside-window)
   (:local-nicknames (#:cursor #:lem-rooms-client/cursor)
                     (#:agent #:rooms-client/agent)
                     (#:agent-api #:rooms-client/agent-api)

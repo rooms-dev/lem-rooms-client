@@ -8,7 +8,6 @@
                (:file "editor")
                (:file "cursor")
                (:file "sign-in")
-               (:file "user")
                (:file "room")
                (:file "buffer")
                (:file "connected-hook")
