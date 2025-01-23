@@ -5,7 +5,8 @@
   (:import-from #:lem-rooms-client/utils
                 #:do-sequence
                 #:hash
-                #:pretty-json)
+                #:pretty-json
+                #:once)
   (:import-from #:lem-rooms-client/room
                 #:room-management-pane
                 #:room-room
@@ -386,7 +387,8 @@
           (buffer-disable-undo buffer)
           (buffer-enable-undo buffer)))
       (buffer:register-room-id-and-path buffer room-id path)
-      (start-timer (make-idle-timer 'check-buffer-sync) 2000 :repeat t))))
+      (once (start-timer (make-idle-timer 'check-buffer-sync) 2000 :repeat t)
+            :name 'check-buffer-sync))))
 
 (defun start-room (room)
   (management-pane:connected (room-management-pane room))

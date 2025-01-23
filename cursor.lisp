@@ -16,8 +16,8 @@
                   :initform nil
                   :accessor cursor-overlay-popup-message)
    (range-overlay :initarg :range-overlay
-		  :initform nil
-		  :accessor cursor-overlay-range-overlay)))
+                  :initform nil
+                  :accessor cursor-overlay-range-overlay)))
 
 (defun make-cursor-overlay (&key point attribute client-id user-name range-overlay)
   (let ((cursor (make-instance 'cursor-overlay
