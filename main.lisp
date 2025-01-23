@@ -132,14 +132,12 @@
   (let ((buffer (point-buffer point)))
     (cond ((buffer:room-id buffer)
            (agent-api:focus (client:client-agent (client))
-                            :name (client:user-name (client))
                             :room-id (buffer:room-id buffer)
                             :path (buffer:path buffer)
                             :position (position-of point)
                             :range (get-range point)))
           ((default-room)
            (agent-api:focus (client:client-agent (client))
-                            :name (client:user-name (client))
                             ;; TODO: 複数のroomを開いている場合にどうするか
                             :room-id (room-id (default-room))
                             :path nil
