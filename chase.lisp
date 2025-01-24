@@ -5,11 +5,13 @@
            #:show-chase-popup-message
            #:remove-chase-popup-message
            #:chase-user-cursor
-           #:chase-off))
+           #:chase-off
+           #:chase))
 (in-package :lem-rooms-client/chase)
 
 (defvar *chase-client-id* nil)
 (defvar *chase-popup-message* nil)
+(defvar *chase-line-overlay* nil)
 
 (defun chase-client-id ()
   *chase-client-id*)
@@ -41,8 +43,22 @@
   (remove-hook *pre-command-hook* 'chase-off)
   (remove-hook *post-command-hook* 'on-post-command)
   (show-cursor (current-window))
-  (remove-chase-popup-message))
+  (remove-chase-popup-message)
+  (clear-chase-overlay))
 
 (defun on-post-command ()
   (when (chase-client-id)
     (show-chase-popup-message)))
+
+(defun clear-chase-overlay ()
+  (when *chase-line-overlay*
+    (delete-overlay *chase-line-overlay*)
+    (setf *chase-line-overlay* nil)))
+
+(defun chase (point user-state)
+  (clear-chase-overlay)
+  (let ((overlay (make-line-overlay
+                  point
+                  (make-attribute
+                   :background (agent-api:user-state-color user-state)))))
+    (setf *chase-line-overlay* overlay)))

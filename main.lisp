@@ -28,7 +28,8 @@
                 #:list-rooms-commands)
   (:import-from #:lem-rooms-client/chase
                 #:chase-client-id
-                #:chase-user-cursor)
+                #:chase-user-cursor
+                #:chase)
   (:import-from #:lem-rooms-client/editor
                 #:lsp-to-lem-position
                 #:position-of
@@ -292,7 +293,7 @@
                                 users
                                 :key #'agent-api:user-state-client-id
                                 :test #'equal)))
-           (jump-to user room)))
+           (jump-to user room :chase t)))
 
        (when (zerop (event-queue-length))
          (management-pane:redraw (room-management-pane room) :users users)
@@ -602,13 +603,15 @@
               :key #'agent-api:user-state-name
               :test #'string=))))
 
-(defun jump-to (user-state room)
+(defun jump-to (user-state room &key chase)
   (let ((path (agent-api:user-state-path user-state))
         (position (agent-api:user-state-position user-state)))
     (unless path
       (return-from jump-to nil))
     (find-file (merge-pathnames path (room-directory room)))
     (move-to-position* (current-point) position)
+    (when chase
+      (chase (current-point) user-state))
     t))
 
 (defun get-other-user-states ()
