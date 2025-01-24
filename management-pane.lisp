@@ -32,6 +32,10 @@
 (define-attribute button-attribute
   (t :underline t))
 
+(define-attribute path-attribute
+  (:dark :foreground "#aaaaaa")
+  (:light :foreground "#111111"))
+
 (defstruct comment
   user-name
   user-color
@@ -200,7 +204,8 @@
                         (path (agent-api:user-state-path user)))
                     (insert-color-text point (format nil " ~A " name) color)
                     (when path
-                      (insert-string point (format nil " [~A]" path)))
+                      (insert-string point " ")
+                      (insert-string point (format nil "[~A]" path) :attribute 'path-attribute))
                     (insert-character point #\newline)))))
             (insert-buffer point users-buffer))
           (insert-string point "Comments:" :attribute 'sub-header-attribute)
