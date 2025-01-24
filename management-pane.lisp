@@ -196,8 +196,11 @@
                 (do-sequence (user users)
                   (declare (agent-api:user-state user))
                   (let ((name (agent-api:user-state-name user))
-                        (color (agent-api:user-state-color user)))
+                        (color (agent-api:user-state-color user))
+                        (path (agent-api:user-state-path user)))
                     (insert-color-text point (format nil " ~A " name) color)
+                    (when path
+                      (insert-string point (format nil " [~A]" path)))
                     (insert-character point #\newline)))))
             (insert-buffer point users-buffer))
           (insert-string point "Comments:" :attribute 'sub-header-attribute)
