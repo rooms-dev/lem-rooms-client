@@ -292,8 +292,7 @@
                                 users
                                 :key #'agent-api:user-state-client-id
                                 :test #'equal)))
-           (when (agent-api:user-state-active user)
-             (jump-to user room))))
+           (jump-to user room)))
 
        (when (zerop (event-queue-length))
          (management-pane:redraw (room-management-pane room) :users users)
