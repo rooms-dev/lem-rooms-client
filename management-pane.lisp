@@ -33,8 +33,7 @@
   (t :underline t))
 
 (define-attribute path-attribute
-  (:dark :foreground "#aaaaaa")
-  (:light :foreground "#111111"))
+  (t :foreground "magenta"))
 
 (defstruct comment
   user-name
@@ -205,7 +204,9 @@
                     (insert-color-text point (format nil " ~A " name) color)
                     (when path
                       (insert-string point " ")
-                      (insert-string point (format nil "[~A]" path) :attribute 'path-attribute))
+                      (insert-string point "[")
+                      (insert-string point (format nil "~A" path) :attribute 'path-attribute)
+                      (insert-string point "]"))
                     (insert-character point #\newline)))))
             (insert-buffer point users-buffer))
           (insert-string point "Comments:" :attribute 'sub-header-attribute)
