@@ -27,9 +27,11 @@
         (variable-value 'lem:highlight-line :buffer (current-buffer)) nil))
 
 (define-attribute sub-header-attribute
-  (t :bold t))
+  (t
+   :bold t
+   :foreground (best-foreground-color (background-color))))
 
-(define-attribute button-attribute
+(define-attribute usage-attribute
   (t :underline t))
 
 (define-attribute path-attribute
@@ -139,9 +141,7 @@
         (with-point ((point (buffer-point buffer) :left-inserting))
           (insert-string point
                          "Rooms"
-                         :attribute (make-attribute
-                                     :bold t
-                                     :foreground (best-foreground-color (background-color))))
+                         :attribute 'sub-header-attribute)
           (insert-character point #\newline)
           (insert-character point #\newline)
           (insert-string point "Usage:" :attribute 'sub-header-attribute)
@@ -152,7 +152,7 @@
                                     "M-x rooms-command-palette (M-P)"
                                     (lambda ()
                                       (call-command (find-command "rooms-command-palette") nil))
-                                    :attribute 'button-attribute)
+                                    :attribute 'usage-attribute)
           (insert-character point #\newline)
           (insert-character point #\newline)
           (insert-string point "To toggle this pane:")
@@ -161,7 +161,7 @@
                                     "M-x rooms-toggle-pane"
                                     (lambda ()
                                       (call-command (find-command "rooms-toggle-pane") nil))
-                                    :attribute 'button-attribute)
+                                    :attribute 'usage-attribute)
           (insert-character point #\newline)
           (insert-character point #\newline)
           (insert-string point "Name:" :attribute 'sub-header-attribute)
