@@ -202,11 +202,22 @@
                         (color (agent-api:user-state-color user))
                         (path (agent-api:user-state-path user)))
                     (insert-color-text point (format nil " ~A " name) color)
-                    (when path
-                      (insert-string point " ")
-                      (insert-string point "[")
-                      (insert-string point (format nil "~A" path) :attribute 'path-attribute)
-                      (insert-string point "]"))
+                    (unless
+                        (when-let (metadata (agent-api:user-state-metadata user))
+                          (when (gethash "chase" metadata)
+                            (let ((user-state (agent-api:convert-to-user-state (gethash "chase" metadata))))
+                              (insert-string point " ")
+                              (insert-string point "chasing to ")
+                              (insert-color-text point
+                                                 (format nil " ~A " (agent-api:user-state-name user-state))
+                                                 (agent-api:user-state-color user-state)))
+                            t))
+                      ;; chaseしていればpathは非表示にする
+                      (when path
+                        (insert-string point " ")
+                        (insert-string point "[")
+                        (insert-string point (format nil "~A" path) :attribute 'path-attribute)
+                        (insert-string point "]")))
                     (insert-character point #\newline)))))
             (insert-buffer point users-buffer))
           (insert-string point "Comments:" :attribute 'sub-header-attribute)

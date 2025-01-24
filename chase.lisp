@@ -1,10 +1,13 @@
 (uiop:define-package :lem-rooms-client/chase
   (:use #:cl #:lem)
-  (:local-nicknames (#:agent-api #:rooms-client/agent-api))
+  (:local-nicknames (#:agent-api #:rooms-client/agent-api)
+                    (#:client #:rooms-client/client))
+  (:import-from #:lem-rooms-client/room
+                #:room-id)
   (:export #:chase-client-id
            #:show-chase-popup-message
            #:remove-chase-popup-message
-           #:chase-user-cursor
+           #:chase-on
            #:chase-off
            #:chase))
 (in-package :lem-rooms-client/chase)
@@ -12,6 +15,7 @@
 (defvar *chase-client-id* nil)
 (defvar *chase-popup-message* nil)
 (defvar *chase-line-overlay* nil)
+(defvar *chase-off-function* nil)
 
 (defun chase-client-id ()
   *chase-client-id*)
@@ -31,12 +35,21 @@
     (delete-popup-message *chase-popup-message*)
     (setf *chase-popup-message* nil)))
 
-(defun chase-user-cursor (user-state room)
-  (declare (ignore room))
+(defun chase-on (&key client user-state room)
   (set-chase-client-id (agent-api:user-state-client-id user-state))
   (add-hook *pre-command-hook* 'chase-off)
   (add-hook *post-command-hook* 'on-post-command)
-  (hide-cursor (current-window)))
+  (hide-cursor (current-window))
+  (agent-api:set-user-metadata (client:client-agent client)
+                               :room-id (room-id room)
+                               :key "chase"
+                               :value (agent-api:convert-structure-to-hash user-state))
+  (setf *chase-off-function*
+        (lambda ()
+          (agent-api:set-user-metadata (client:client-agent client)
+                                       :room-id (room-id room)
+                                       :key "chase"
+                                       :value nil))))
 
 (defun chase-off ()
   (set-chase-client-id nil)
@@ -44,7 +57,10 @@
   (remove-hook *post-command-hook* 'on-post-command)
   (show-cursor (current-window))
   (remove-chase-popup-message)
-  (clear-chase-overlay))
+  (clear-chase-overlay)
+  (when *chase-off-function*
+    (funcall *chase-off-function*)
+    (setf *chase-off-function* nil)))
 
 (defun on-post-command ()
   (when (chase-client-id)

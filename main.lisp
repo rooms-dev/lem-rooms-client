@@ -28,7 +28,7 @@
                 #:list-rooms-commands)
   (:import-from #:lem-rooms-client/chase
                 #:chase-client-id
-                #:chase-user-cursor
+                #:chase-on
                 #:chase)
   (:import-from #:lem-rooms-client/editor
                 #:lsp-to-lem-position
@@ -636,7 +636,7 @@
       (get-other-user-states)
     (when user-states
       (let ((user-state (choose-user user-states)))
-        (chase-user-cursor user-state room)))))
+        (chase-on :user-state user-state :room room :client (client))))))
 
 (define-command rooms-command-palette (arg) (:universal-nil)
   (let* ((commands (list-rooms-commands))

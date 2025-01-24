@@ -2,7 +2,8 @@
   (:use #:cl)
   (:local-nicknames (#:agent #:rooms-client/agent))
   (:shadow #:room)
-  (:export #:user
+  (:export #:convert-structure-to-hash
+           #:user
            #:user-id
            #:user-github-login
            #:user-avatar-url
@@ -21,6 +22,7 @@
            #:user-state-id
            #:user-state-name
            #:user-state-color
+           #:user-state-metadata
            #:user-state-room-id
            #:user-state-path
            #:user-state-position
@@ -74,6 +76,7 @@
            #:get-comments
            #:get-users
            #:get-text
+           #:set-user-metadata
            #:disconnect))
 (in-package #:rooms-client/agent-api)
 
@@ -94,6 +97,14 @@
                                     `(gethash ,field-name ,value))))))
        (defun ,converter (,value)
          (convert ',name ,value)))))
+
+(defun convert-structure-to-hash (structure-object)
+  (let ((hash (make-hash-table :test 'equal)))
+    (loop :for slot :in (c2mop:class-direct-slots (class-of structure-object))
+          :for slot-name := (c2mop:slot-definition-name slot)
+          :do (setf (gethash (change-case:param-case (string slot-name)) hash)
+                    (slot-value structure-object slot-name)))
+    hash))
 
 (define-json-structure (user :converter convert-to-user)
   (id "id")
@@ -118,6 +129,7 @@
   (id "id")
   (name "name")
   (color "color")
+  (metadata "metadata")
   (room-id "roomId")
   (path "path")
   (position "position")
@@ -274,6 +286,13 @@
                           (hash :room-id room-id
                                 :path path))))
     text))
+
+(defun set-user-metadata (agent &key room-id key value)
+  (agent:notify agent
+                "set-user-metadata"
+                (hash :room-id room-id
+                      :key key
+                      :value value)))
 
 (defun disconnect (agent &key room-id)
   (agent:call agent "disconnect" (hash :room-id room-id))
