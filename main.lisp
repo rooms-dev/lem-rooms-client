@@ -121,14 +121,14 @@
                (client:client-agent (client)))))
   (add-hook (variable-value 'before-change-functions :global t) 'on-before-change))
 
-(defun get-range (point)
+(defun get-ranges (point)
   (let ((buffer (point-buffer point)))
     (when (buffer-mark-p buffer)
-      (let ((mark (buffer-mark buffer)))
-        (let ((start (position-of mark))
-              (end (position-of point)))
-          (hash :start (min start end)
-                :end (max start end)))))))
+      (let* ((mark (buffer-mark buffer))
+             (start (position-of mark))
+             (end (position-of point)))
+        (list (hash :start (min start end)
+                    :end (max start end)))))))
 
 (defun notify-focus (point)
   (let ((buffer (point-buffer point)))
@@ -137,14 +137,14 @@
                             :room-id (buffer:room-id buffer)
                             :path (buffer:path buffer)
                             :position (position-of point)
-                            :range (get-range point)))
+                            :ranges (get-ranges point)))
           ((default-room)
            (agent-api:focus (client:client-agent (client))
                             ;; TODO: 複数のroomを開いている場合にどうするか
                             :room-id (room-id (default-room))
                             :path nil
                             :position nil
-                            :range nil)))))
+                            :ranges nil)))))
 
 (defvar *edit-queue* (sb-concurrency:make-queue :name "lem-rooms-client/edit-queue"))
 
@@ -257,9 +257,11 @@
                                   (agent-api:user-state-name user)
                                   (agent-api:user-state-color user)
                                   (lsp-to-lem-position (agent-api:user-state-position user))
-                                  (when-let (range (agent-api:user-state-range user))
-                                    (list (lsp-to-lem-position (agent-api:range-start range))
-                                          (lsp-to-lem-position (agent-api:range-end range)))))
+                                  (when-let (ranges (agent-api:user-state-ranges user))
+                                    ;; TODO: rangeが複数の場合にも対応する
+                                    (let ((range (first ranges)))
+                                      (list (lsp-to-lem-position (agent-api:range-start range))
+                                            (lsp-to-lem-position (agent-api:range-end range))))))
             t))
         (cursor:delete-cursor (agent-api:user-state-client-id user)))))
 

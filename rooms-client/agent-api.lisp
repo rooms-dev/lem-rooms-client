@@ -26,7 +26,7 @@
            #:user-state-room-id
            #:user-state-path
            #:user-state-position
-           #:user-state-range
+           #:user-state-ranges
            #:user-state-active
            #:user-state-myself
            #:authenticated
@@ -133,9 +133,8 @@
   (room-id "roomId")
   (path "path")
   (position "position")
-  (range "range" :converter (lambda (value)
-                              (when value
-                                (convert-to-range value))))
+  (ranges "ranges" :converter (lambda (value)
+                                (map 'list #'convert-to-range value)))
   (active "active")
   (myself "myself"))
 
@@ -206,14 +205,14 @@
                (hash :invitation-code invitation-code
                      :access-token access-token))))
 
-(defun focus (agent &key name room-id path position range)
+(defun focus (agent &key name room-id path position ranges)
   (agent:notify agent
                 "focus"
                 (hash :name name
                       :room-id room-id
                       :path path
                       :position position
-                      :range range))
+                      :ranges ranges))
   (values))
 
 (defun edit (agent &key room-id path ops)
