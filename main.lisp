@@ -281,6 +281,8 @@
             exclude-deleting-users))
     (cursor:delete-cursors-by-excluding-ids exclude-deleting-users)))
 
+(defvar *users* nil)
+
 (defun on-users (params)
   (send-event
    (lambda ()
@@ -294,6 +296,9 @@
                                      (agent-api:user-state-room-id user)))
                                  users)))
                  (room (find-room-by-id room-id)))
+
+       (setf *users* users)
+
        (update-cursors users)
 
        (when (chase-client-id)
@@ -672,3 +677,29 @@
                :history-symbol 'rooms-command-palette
                :syntax-table lem-lisp-syntax:*syntax-table*))))
       (call-command (find-command command) arg))))
+
+
+;;;;
+
+
+(defun directory-mode/insert-user-name (point item)
+  (declare (type lem/directory-mode/internal::item item))
+  (when-let* ((buffer (point-buffer point))
+              (room (find-room-by-file (buffer-directory buffer))))
+    (let ((path (enough-namestring (lem/directory-mode/internal::item-pathname item)
+                                   (room-directory room))))
+      (dolist (user *users*)
+        (when-let (user-path (agent-api:user-state-path user))
+          (when (and (not (equal ".." (lem/directory-mode/internal::item-content item)))
+                     (starts-with-subseq path user-path))
+            (insert-string point " ")
+            (management-pane::insert-color-text
+             point
+             (format nil " ~A " (agent-api:user-state-name user))
+             (agent-api:user-state-color user))
+            (return)))))))
+
+(unless (member 'directory-mode/insert-user-name
+                lem/directory-mode/internal::*file-entry-inserters*)
+  (appendf lem/directory-mode/internal::*file-entry-inserters*
+           (list 'directory-mode/insert-user-name)))
