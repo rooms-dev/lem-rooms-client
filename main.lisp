@@ -651,32 +651,35 @@
       (let ((user-state (choose-user user-states)))
         (chase-on :user-state user-state :room room :client (client))))))
 
-(define-command rooms-command-palette (arg) (:universal-nil)
+(defun prompt-for-rooms-command ()
   (let* ((commands (list-rooms-commands))
          (completions (loop :for command :in commands
                             :collect (lem/completion-mode:make-completion-item
                                       :label (rooms-command-name command)
-                                      :detail (rooms-command-description command)))))
-    (let ((command
-            (let ((lem-core::*default-prompt-gravity* :top-display)
-                  (lem/prompt-window::*fill-width* t)
-                  (*prompt-after-activate-hook* *prompt-after-activate-hook*))
-              (add-hook *prompt-after-activate-hook* 'lem/prompt-window::prompt-completion)
-              (prompt-for-string
-               "Rooms Command: "
-               :completion-function (lambda (s)
-                                      (completion-strings
-                                       s
-                                       completions
-                                       :key #'lem/completion-mode:completion-item-label))
-               :test-function (lambda (s)
-                                (member s
-                                        completions
-                                        :test #'equal
-                                        :key #'lem/completion-mode:completion-item-label))
-               :history-symbol 'rooms-command-palette
-               :syntax-table lem-lisp-syntax:*syntax-table*))))
-      (call-command (find-command command) arg))))
+                                      :detail (rooms-command-description command))))
+         (lem-core::*default-prompt-gravity* :top-display)
+         (lem/prompt-window::*fill-width* t)
+         (*prompt-after-activate-hook* *prompt-after-activate-hook*))
+    (add-hook *prompt-after-activate-hook* 'lem/prompt-window::prompt-completion)
+    (find-command
+     (prompt-for-string
+      "Rooms Command: "
+      :completion-function (lambda (s)
+                             (completion-strings
+                              s
+                              completions
+                              :key #'lem/completion-mode:completion-item-label))
+      :test-function (lambda (s)
+                       (member s
+                               completions
+                               :test #'equal
+                               :key #'lem/completion-mode:completion-item-label))
+      :history-symbol 'rooms-command-palette
+      :syntax-table lem-lisp-syntax:*syntax-table*))))
+
+(define-command rooms-command-palette (arg) (:universal-nil)
+  (let ((command (prompt-for-rooms-command)))
+    (call-command command arg)))
 
 
 ;;;;
