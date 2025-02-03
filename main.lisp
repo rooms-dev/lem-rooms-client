@@ -86,6 +86,7 @@
                                    :on-edit 'on-edit
                                    :on-users 'on-users
                                    :on-comments 'on-comments
+                                   :on-messages 'on-messages
                                    :on-file-changed 'on-file-changed))))
     (set-client client)
     client))
@@ -321,6 +322,11 @@
         (room-management-pane room)
         :comments (management-pane:convert-comments
                    (agent-api:commented-event-comments event)))))))
+
+(defun on-messages (params)
+  (declare (ignore params))
+  ;; TODO
+  )
 
 (defun on-file-changed (params)
   (send-event

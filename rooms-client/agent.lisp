@@ -38,6 +38,7 @@
                        on-edit
                        on-users
                        on-comments
+                       on-messages
                        on-file-changed)
   (let* ((process (run-process))
          (jsonrpc (jsonrpc:make-client))
@@ -51,6 +52,7 @@
     (jsonrpc:expose jsonrpc "edit" on-edit)
     (jsonrpc:expose jsonrpc "users" on-users)
     (jsonrpc:expose jsonrpc "comments" on-comments)
+    (jsonrpc:expose jsonrpc "userMessage" on-messages)
     (jsonrpc:expose jsonrpc "fileChanged" on-file-changed)
     (jsonrpc/client:client-connect-using-class
      jsonrpc

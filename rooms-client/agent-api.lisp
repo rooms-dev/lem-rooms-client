@@ -74,6 +74,7 @@
            #:sync-directory
            #:comment
            #:get-comments
+           #:send-message
            #:get-users
            #:get-text
            #:set-user-metadata
@@ -273,6 +274,13 @@
        (agent:call agent
                    "get-comments"
                    (hash :room-id room-id))))
+
+(defun send-message (agent &key room-id text type)
+  (agent:notify agent
+                "send-message"
+                (hash :room-id room-id
+                      :text text
+                      :type type)))
 
 (defun get-users (agent &key room-id)
   (map 'list

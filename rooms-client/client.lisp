@@ -42,6 +42,7 @@
                     on-edit
                     on-users
                     on-comments
+                    on-messages
                     on-file-changed
                     access-token
                     user
@@ -60,6 +61,7 @@
                                 (funcall on-comments
                                          client
                                          (agent-api:convert-to-commented-event params)))
+                 :on-messages on-messages
                  :on-file-changed on-file-changed)))
     (set-client-agent agent client)
     client))
