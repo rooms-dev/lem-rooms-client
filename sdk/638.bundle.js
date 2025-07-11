@@ -1,0 +1,1 @@
+"use strict";exports.id=638,exports.ids=[638],exports.modules={4638:(e,r,t)=>{t.r(r),t.d(r,{initializeRoomDirectory:()=>i,readFileContent:()=>n,walkDirectory:()=>o});const o=(e,r)=>{throw new Error("walkDirectory is not implemented in the browser environment")},n=(e,r)=>{throw new Error("readFileContent is not implemented in the browser environment")},i=(e,r)=>null}};
