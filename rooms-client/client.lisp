@@ -120,13 +120,19 @@
                                     :invitation-code invitation-code
                                     :access-token (client-access-token client)))
 
+(defun convert-websocket-url (url &key (docker (equal "1" (uiop:getenv "DOCKER"))))
+  ;; docker内ならホスト側につなぐ必要があるので変換する
+  (if docker
+      (quri:render-uri (quri:make-uri :defaults url :host "host.docker.internal"))
+      url))
+
 (defmethod enter-room ((client client) room)
   (check-type room agent-api:room)
   (agent-api:enter-room (client-agent client)
                         :room-id (agent-api:room-id room)
                         :user-id (user-id client)
                         :user-name (user-name client)
-                        :websocket-url (agent-api:room-websocket-url room)
+                        :websocket-url (convert-websocket-url (agent-api:room-websocket-url room))
                         :access-token (client-access-token client)))
 
 (defmethod sync-directory ((client client) room)
