@@ -1,7 +1,7 @@
 ("quicklisp" .
  (:class qlot/source/dist:source-dist
   :initargs (:distribution "https://beta.quicklisp.org/dist/quicklisp.txt" :%version :latest)
-  :version "2024-10-12"))
+  :version "2025-06-22"))
 ("uiop" .
  (:class qlot/source/ql:source-ql
   :initargs (:%version :latest)
@@ -9,7 +9,7 @@
 ("micros" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/micros.git")
-  :version "git-25177e04a946365397a0848a6545399860d310d0"))
+  :version "git-7dc9b46d3aad13661468863dc21ea1b599890487"))
 ("lem-mailbox" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/lem-mailbox.git")
@@ -25,8 +25,8 @@
 ("lem" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/lem.git")
-  :version "git-c593ec95392bc49b534320f7d4b58e98e67704f0"))
+  :version "git-b242c4bfce7a18a4b1a058b901cd0334f66b9a6f"))
 ("ollama" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/cxxxr/cl-ollama.git")
-  :version "git-b147466e7b198bef0503acc3a56e6d9f10cb54c9"))
+  :version "git-f82b1c6f46d3979ef81481580deee9e1e700dd85"))
