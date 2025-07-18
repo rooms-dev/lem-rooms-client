@@ -25,6 +25,7 @@
 (defun run-process ()
   (unless (installed-nodejs-p)
     (error "Node.js is not installed"))
+  (setf (uiop:getenv "NODE_NO_WARNINGS") "1")
   (async-process:create-process
    (list "node"
          (namestring (probe-file *agent-path*)))))
@@ -45,7 +46,7 @@
          (stream (rooms-client/async-process-stream:make-input-stream
                   process
                   :logger (lambda (output)
-                            (log:debug "agent output: ~A" output)))))
+                            (log:info "agent output: ~A" output)))))
     (jsonrpc:expose jsonrpc "message" on-message)
     (jsonrpc:expose jsonrpc "connected" on-connected)
     (jsonrpc:expose jsonrpc "disconnected" on-disconnected)

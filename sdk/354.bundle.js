@@ -1,1 +1,0 @@
-"use strict";exports.id=354,exports.ids=[354],exports.modules={3354:(e,o,r)=>{r.r(o),r.d(o,{createWebSocketProvider:()=>c});var t=r(7699),s=r(4240);const c=(e,o,r,c={})=>new s.$R(e,o,r,{WebSocketPolyfill:t,...c})}};
