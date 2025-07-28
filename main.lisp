@@ -43,7 +43,8 @@
                     (#:management-pane #:lem-rooms-client/management-pane)
                     (#:client #:rooms-client/client)
                     (#:connected-hook #:lem-rooms-client/connected-hook)
-                    (#:sign-in #:lem-rooms-client/sign-in)))
+                    (#:sign-in #:lem-rooms-client/sign-in)
+                    (#:room #:lem-rooms-client/room)))
 (in-package #:lem-rooms-client)
 
 (define-minor-mode rooms-mode
@@ -429,6 +430,19 @@
                      :test-function (lambda (s)
                                       (member s '("public" "private") :test #'equal))))
 
+(defun get-web-url ()
+  (or (uiop:getenv "ROOMS_WEB_URL")
+      "http://localhost:5173"))
+
+(defun show-room-url (room)
+  (let* ((url (format nil "~A/rooms/~A" (get-web-url) (room:room-id room)))
+         (window (display-popup-message (format nil "You can share this room by opening~2%    ~A    ~2%copied URL to clipboard " url)
+                                        :timeout nil
+                                        :style '(:gravity :center))))
+    (copy-to-clipboard url)
+    (unwind-protect (read-key)
+      (delete-popup-message window))))
+
 (define-rooms-command rooms-create-room () ()
   "Create a new room"
   (init)
@@ -465,7 +479,8 @@
                             (agent-api:share-directory (client:client-agent (client))
                                                        :room-id room-id
                                                        :path directory)
-                            (start-room room)))))))
+                            (start-room room)
+                            (show-room-url room)))))))
 
 (defun join-room (room-json)
   (let* ((room-id (agent-api:room-id room-json))
