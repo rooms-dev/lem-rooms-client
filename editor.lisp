@@ -47,7 +47,7 @@
 (defun lighten-color (color &key (factor 0.5))
   (let ((color (parse-color color)))
     (multiple-value-bind (h s v)
-        (lem:rgb-to-hsv (color-red color) (color-green color) (color-blue color))
+        (lem:rgb-to-hsv color)
       (multiple-value-bind (r g b)
           (hsv-to-rgb h
                       (* s (- 1 factor))
