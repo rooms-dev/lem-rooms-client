@@ -5,3 +5,4 @@ git async-process https://github.com/lem-project/async-process.git
 git jsonrpc https://github.com/cxxxr/jsonrpc.git
 git lem https://github.com/lem-project/lem.git
 git ollama https://github.com/cxxxr/cl-ollama.git
+git lem-extension-manager https://github.com/lem-project/lem-extension-manager.git
