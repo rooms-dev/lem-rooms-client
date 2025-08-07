@@ -26,3 +26,4 @@
 ;(setf rooms-client/agent::*agent-path* "~/rooms-dev/rooms/editor-agent/index.js")
 
 ;(log:config :sane :daily "/tmp/lem.log" :info)
+(log:config :off)
