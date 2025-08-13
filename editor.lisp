@@ -26,6 +26,7 @@
 
 (defun browser-frontend-p ()
   (and (find-package :lem-server)
+       (not (find-package :lem-webview))
        (typep (lem:implementation) (find-symbol "JSONRPC" :lem-server))))
 
 (defun rgb-to-luminance (r g b)
