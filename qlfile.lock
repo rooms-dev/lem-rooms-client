@@ -9,7 +9,7 @@
 ("micros" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/micros.git")
-  :version "git-7bb942a39682d4c70b772312147287d465dd13c8"))
+  :version "git-e1d3857400a9bf7d1c6c2852d9c7017a0dc52217"))
 ("lem-mailbox" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/lem-mailbox.git")
@@ -17,7 +17,7 @@
 ("async-process" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/async-process.git")
-  :version "git-3b16b91d417530dac03559980fb5703206e20c55"))
+  :version "git-ad9f07c1b09dfa1c9bd8eb2b9d5588baf278b113"))
 ("jsonrpc" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/cxxxr/jsonrpc.git")
@@ -25,7 +25,7 @@
 ("lem" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/lem-project/lem.git")
-  :version "git-7279d0c54a1fdc33e94c9e10c1ea47e3fed5c6cb"))
+  :version "git-8db63f559b133beb326f4c5f0e01de60b039d44f"))
 ("ollama" .
  (:class qlot/source/git:source-git
   :initargs (:remote-url "https://github.com/cxxxr/cl-ollama.git")
